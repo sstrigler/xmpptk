@@ -1,5 +1,7 @@
 goog.provide('xmpptk.subject');
 
+goog.require('goog.array');
+
 /**
  * This is part of the observer pattern. A subject to observer.
  */
