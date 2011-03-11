@@ -11,6 +11,6 @@ xmpptk.observer.prototype.observe = function(subject) {
 
 xmpptk.observer.prototype.update = function() {
     // must be overwritten
-    throw("update called on observer but wasn't handled");
+    throw "update called on observer but wasn't handled";
 };
 
