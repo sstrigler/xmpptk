@@ -5,7 +5,7 @@ all: clean deps build
 
 build: 
 	@echo "building xmpptk";
-	@./lib/closure-library/closure/bin/build/closurebuilder.py --root=lib/closure-library/ --root=src/ --namespace="xmpptk" --output_mode=compiled --compiler_jar=utils/compiler/compiler.jar > $(OUTFILE)
+	@./lib/closure-library/closure/bin/build/closurebuilder.py --root=lib/closure-library/ --root=lib/jsjac/src --root=src/ --namespace="xmpptk" --output_mode=compiled --compiler_jar=utils/compiler/compiler.jar > $(OUTFILE)
 
 clean:
 	@rm -f $(OUTFILE) 2> /dev/null
