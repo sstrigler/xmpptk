@@ -1,5 +1,7 @@
 goog.provide('xmpptk.xmpp');
 
+goog.require('xmpptk');
+
 goog.require('goog.array');
 goog.require('goog.object');
 
@@ -169,7 +171,7 @@ xmpptk.xmpp.prototype.sendState = function(state) {
 
 xmpptk.xmpp.prototype.sendSubscription = function(jid, type, message) {
     var p = new JSJaCPresence();
-    p.setTo((new JSJaCJID(jid).removeResource());
+    p.setTo((new JSJaCJID(jid)).removeResource());
     p.setType(type);
     if (message) {
         p.setStatus(message);
@@ -277,5 +279,5 @@ xmpptk.xmpp.prototype._handleRosterPush = function(resIQ) {
 };
 
 xmpptk.xmpp.ns = {
-    XMPPTK_STATE = 'xmpptk:state'
+    XMPPTK_STATE: 'xmpptk:state'
 };
