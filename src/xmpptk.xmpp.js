@@ -51,7 +51,7 @@ xmpptk.xmpp.prototype.getRoster = function(callback, context) {
     var iq = new JSJaCIQ();
     iq.setType('get');
     iq.setQuery(NS_ROSTER);
-    
+
     this._con.sendIQ(iq, {
         result_handler: function(resIQ) {
             var roster = [];
