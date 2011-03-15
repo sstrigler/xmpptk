@@ -1,5 +1,7 @@
 goog.provide('xmpptk.model.collection');
 
+goog.require('goog.object');
+
 xmpptk.model.collection =  function(itemClass, itemID) {
     if (!itemClass || !itemID) {
         throw "missing argument";
@@ -34,7 +36,7 @@ xmpptk.model.collection.prototype.getItem = function(id) {
 
 xmpptk.model.collection.prototype.getItems = function() {
     var items = {};
-    jQuery.each(
+    goog.object.forEach(
         this.items,
         function(id, item) {
             items[id] = item.get();
@@ -65,17 +67,15 @@ xmpptk.model.collection.prototype.removeItem = function(id) {
 };
 
 xmpptk.model.collection.prototype.setItems = function(items) {
-    this.items = {};
+    this.items = {}; // reset my own items
     if (items) {
-        var count = 0;
-        jQuery.each( 
+        goog.object.forEach( 
             items, 
-            CCE.bind(
-                function(i, item) {
+            goog.bind(
+                function(item) {
                     try { 
                         this.add(new this._itemClass(item), true);
-                        count++;
-                    } catch(e) { console.error(e); }
+                    } catch(e) { }
                 },
                 this
             )
