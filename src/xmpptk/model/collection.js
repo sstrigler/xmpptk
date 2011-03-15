@@ -6,7 +6,9 @@ xmpptk.model.collection =  function(itemClass, itemID) {
     if (!itemClass || !itemID) {
         throw "missing argument";
     }
-    this.sup();
+
+    xmpptk.model.call(this);
+
     this.items = {};
     this._itemClass = itemClass;
     this._itemID = itemID;
