@@ -1,4 +1,4 @@
-goog.provide('xmpptk.emotions');
+goog.provide('xmpptk.ui.emoticons');
 
 goog.require('goog.object');
 
