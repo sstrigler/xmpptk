@@ -16,7 +16,7 @@ xmpptk.ui.emoticons.init = function(base_url) {
   goog.object.foreach(
     xmpptk.ui.emoticons,
     function(val, key) {
-    
+
       var key_q = key.replace(/\\/g, '\\\\');
       key_q = key_q.replace(/\)/g, '\\)');
       key_q = key_q.replace(/\(/g, '\\(');
