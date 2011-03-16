@@ -7,11 +7,13 @@ goog.require('goog.object');
 goog.require('goog.pubsub.PubSub');
 goog.require('goog.debug.Logger');
 
+goog.require('goog.json');
+
 /**
  * The actual XMPP connection that wraps all the tricky XMPP stuff.
  * @constructor
  * @extends {goog.pubsub.PubSub}
- * @param {{httpbase: string, xmppdomain: string, user: string, password: string, resource: string}} cfg A configuration
+ * @param {{httpbase: string, xmppdomain: string, username: string, password: string, resource: string}} cfg A configuration
  */
 xmpptk.Client = function(cfg) {
 
@@ -106,10 +108,11 @@ xmpptk.Client.prototype.isConnected = function() {
 };
 
 xmpptk.Client.prototype.login = function(callback, context) {
+    this._logger.info("logging in with: " + goog.json.serialize(this._cfg));
     this.subscribeOnce('_login', callback, context);
     this._con.connect({
         'domain'   : this._cfg.xmppdomain,
-        'username' : this._cfg.user,
+        'username' : this._cfg.username,
         'pass'     : this._cfg.password,
         'resource' : this._cfg.resource
     });
