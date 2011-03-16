@@ -15,7 +15,7 @@ goog.require('goog.debug.Logger');
  */
 xmpptk.Client = function(cfg) {
 
-    goog.pubsub.Pubsub.call(this);
+    goog.pubsub.PubSub.call(this);
 
     this._cfg = cfg;
 
