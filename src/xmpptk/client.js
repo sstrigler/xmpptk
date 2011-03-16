@@ -106,7 +106,7 @@ xmpptk.Client.prototype.isConnected = function() {
 };
 
 xmpptk.Client.prototype.login = function(callback, context) {
-    this.subscribeOnce('_login', callback, context, true);
+    this.subscribeOnce('_login', callback, context);
     this._con.connect({
         'domain'   : this._cfg.xmppdomain,
         'username' : this._cfg.user,
