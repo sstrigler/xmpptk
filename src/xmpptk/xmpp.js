@@ -1,22 +1,23 @@
-goog.provide('xmpptk.xmpp');
+goog.provide('xmpptk.Client');
 
 goog.require('xmpptk');
 
 goog.require('goog.array');
 goog.require('goog.object');
+goog.require('goog.pubsub.PubSub');
+goog.require('goog.debug.Logger');
 
 /**
  * The actual XMPP connection that wraps all the tricky XMPP stuff.
  * @constructor
- * @param {{httpbase: string, xmppdomain: string, user: string, password: string, resource: string, debug: boolean}} cfg A configuration
- * @param {goog.pubsub.PubSub} p A pubsub channel
- * @param {goog.debug.Logger} logger A logger for debugging
+ * @extends {goog.pubsub.PubSub}
+ * @param {{httpbase: string, xmppdomain: string, user: string, password: string, resource: string}} cfg A configuration
  */
-xmpptk.xmpp = function(cfg, p, logger) {
+xmpptk.Client = function(cfg) {
+
+    goog.pubsub.Pubsub.call(this);
 
     this._cfg = cfg;
-    this._p = p;
-    this._debug = logger;
 
     this._con = new JSJaCHttpBindingConnection({httpbase: cfg.httpbase});
 
@@ -25,7 +26,7 @@ xmpptk.xmpp = function(cfg, p, logger) {
 
     this._con.registerHandler('ondisconnect',
                               JSJaC.bind(function() {
-                                  this._p.publish('disconnected',
+                                  this.publish('disconnected',
                                                   this._con.status() == 'session-terminate-conflict');
                               },this));
 
@@ -41,15 +42,22 @@ xmpptk.xmpp = function(cfg, p, logger) {
 
     this._con.registerHandler('packet_in',
                               JSJaC.bind(function(packet) {
-                                  this._debug.fine("[IN]: "+packet.xml());
+                                  this._logger.fine("[IN]: "+packet.xml());
                               }, this));
     this._con.registerHandler('packet_out',
                               JSJaC.bind(function(packet) {
-                                  this._debug.fine("[OUT]: "+packet.xml());
+                                  this._logger.fine("[OUT]: "+packet.xml());
                               }, this));
 };
+goog.inherits(xmpptk.Client, goog.pubsub.PubSub);
 
-xmpptk.xmpp.prototype.getRoster = function(callback, context) {
+/**
+ * @type {goog.debug.Logger}
+ * @protected
+*/
+xmpptk.Client.prototype._logger = goog.debug.Logger.getLogger('xmpptk.Client');
+
+xmpptk.Client.prototype.getRoster = function(callback, context) {
     var iq = new JSJaCIQ();
     iq.setType('get');
     iq.setQuery(NS_ROSTER);
@@ -76,29 +84,29 @@ xmpptk.xmpp.prototype.getRoster = function(callback, context) {
     });
 };
 
-xmpptk.xmpp.prototype.getState = function(callback, context) {
+xmpptk.Client.prototype.getState = function(callback, context) {
     var iq = new JSJaCIQ();
     iq.setType('get');
     var query = iq.setQuery(NS_PRIVATE);
 
-    query.appendChild(iq.buildNode('xmpptk', {xmlns: xmpptk.xmpp.ns.XMPPTK_STATE}));
+    query.appendChild(iq.buildNode('xmpptk', {xmlns: xmpptk.Client.ns.XMPPTK_STATE}));
 
     this._con.sendIQ(iq,
                      {result_handler:
                       function(resIQ) {
-                          var state = resIQ.getChildVal('xmpptk', xmpptk.xmpp.ns.XMPPTK_STATE);
+                          var state = resIQ.getChildVal('xmpptk', xmpptk.Client.ns.XMPPTK_STATE);
                           xmpptk.call(callback, context, state);
                       }
                      });
 };
 
 
-xmpptk.xmpp.prototype.isConnected = function() {
+xmpptk.Client.prototype.isConnected = function() {
     return this._con.connected();
 };
 
-xmpptk.xmpp.prototype.login = function(callback, context) {
-    this._p.subscribeOnce('_login', callback, context, true);
+xmpptk.Client.prototype.login = function(callback, context) {
+    this.subscribeOnce('_login', callback, context, true);
     this._con.connect({
         'domain'   : this._cfg.xmppdomain,
         'username' : this._cfg.user,
@@ -107,15 +115,15 @@ xmpptk.xmpp.prototype.login = function(callback, context) {
     });
 };
 
-xmpptk.xmpp.prototype.logout = function() {
+xmpptk.Client.prototype.logout = function() {
     this._con.disconnect();
 };
 
-xmpptk.xmpp.prototype.resume = function() {
+xmpptk.Client.prototype.resume = function() {
     return this._con.resume();
 };
 
-xmpptk.xmpp.prototype.rosterItemSet = function(item, callback) {
+xmpptk.Client.prototype.rosterItemSet = function(item, callback) {
     var iq = new JSJaCIQ();
     iq.setType('set');
     iq.setQuery(NS_ROSTER).appendChild(
@@ -127,7 +135,7 @@ xmpptk.xmpp.prototype.rosterItemSet = function(item, callback) {
     this._con.sendIQ(iq, {error_handler: callback, result_handler: callback});
 };
 
-xmpptk.xmpp.prototype.sendPresence = function(state, message, jid) {
+xmpptk.Client.prototype.sendPresence = function(state, message, jid) {
     var p = new JSJaCPresence();
     p.setTo(jid);
 
@@ -145,7 +153,7 @@ xmpptk.xmpp.prototype.sendPresence = function(state, message, jid) {
     this._con.send(p);
 };
 
-xmpptk.xmpp.prototype.sendMessage = function(jid, message) {
+xmpptk.Client.prototype.sendMessage = function(jid, message) {
     var m = new JSJaCMessage();
     m.setTo(jid);
     m.setType('chat');
@@ -154,14 +162,14 @@ xmpptk.xmpp.prototype.sendMessage = function(jid, message) {
     this._con.send(m);
 };
 
-xmpptk.xmpp.prototype.sendState = function(state) {
+xmpptk.Client.prototype.sendState = function(state) {
     var iq = new JSJaCIQ();
     iq.setType('set');
     iq.setQuery(NS_PRIVATE).
         appendChild(
             iq.buildNode(
                 'xmpptk',
-                {xmlns: xmpptk.xmpp.ns.XMPPTK_STATE},
+                {xmlns: xmpptk.Client.ns.XMPPTK_STATE},
                 state
             )
         );
@@ -169,7 +177,7 @@ xmpptk.xmpp.prototype.sendState = function(state) {
     this._con.send(iq);
 };
 
-xmpptk.xmpp.prototype.sendSubscription = function(jid, type, message) {
+xmpptk.Client.prototype.sendSubscription = function(jid, type, message) {
     var p = new JSJaCPresence();
     p.setTo((new JSJaCJID(jid)).removeResource());
     p.setType(type);
@@ -179,16 +187,16 @@ xmpptk.xmpp.prototype.sendSubscription = function(jid, type, message) {
     this._con.send(p);
 };
 
-xmpptk.xmpp.prototype.suspend = function() {
+xmpptk.Client.prototype.suspend = function() {
     return this._con.suspend();
 };
 
-xmpptk.xmpp.prototype._handleConnected = function() {
-    this._p.publish('connected');
-    this._p.publish('_login');
+xmpptk.Client.prototype._handleConnected = function() {
+    this.publish('connected');
+    this.publish('_login');
 };
 
-xmpptk.xmpp.prototype._handleMessage = function(m) {
+xmpptk.Client.prototype._handleMessage = function(m) {
     if (m.getBody() === '') { // hu?
         return;
     }
@@ -212,17 +220,17 @@ xmpptk.xmpp.prototype._handleMessage = function(m) {
         );
     }
 
-    this._p.publish('message', message);
+    this.publish('message', message);
 };
 
-xmpptk.xmpp.prototype._handlePresence = function(p) {
+xmpptk.Client.prototype._handlePresence = function(p) {
     if (p.getFromJID().isEntity(new JSJaCJID(this._con.jid))) {
         // a presence from ourselves
         return;
     }
     if (p.getType() && p.getType().match(/subscribe/)) {
         // it's got to do sth with subscriptions
-        return this._p.publish(
+        return this.publish(
             'subscription',
             {
                 from    : p.getFromJID().removeResource().toString(),
@@ -239,7 +247,7 @@ xmpptk.xmpp.prototype._handlePresence = function(p) {
             state = p.getShow();
         }
     }
-    this._p.publish(
+    this.publish(
         'presence',
         {
             from: p.getFrom(),
@@ -252,12 +260,12 @@ xmpptk.xmpp.prototype._handlePresence = function(p) {
     );
 };
 
-xmpptk.xmpp.prototype._handleRosterPush = function(resIQ) {
+xmpptk.Client.prototype._handleRosterPush = function(resIQ) {
     goog.array.forEach(
         resIQ.getQuery().children,
         goog.bind(
             function(i, item) {
-                this._p.publish(
+                this.publish(
                     'roster_push',
                     {
                         jid          : item.getAttribute('jid'),
@@ -278,6 +286,6 @@ xmpptk.xmpp.prototype._handleRosterPush = function(resIQ) {
     );
 };
 
-xmpptk.xmpp.ns = {
+xmpptk.Client.ns = {
     XMPPTK_STATE: 'xmpptk:state'
 };
