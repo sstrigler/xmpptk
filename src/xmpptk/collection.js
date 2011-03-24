@@ -1,21 +1,28 @@
-goog.provide('xmpptk.model.collection');
+goog.provide('xmpptk.Collection');
 
 goog.require('goog.object');
+goog.require('xmpptk.Model');
 
-xmpptk.model.collection =  function(itemClass, itemID) {
+/**
+ * @constructor
+ * @inherits {xmpptk.Model}
+ * @param {function} itemClass classname of items to build collection of
+ * @param {string} itemID the key id to differentiate items with (aka primary key)
+*/
+xmpptk.Collection =  function(itemClass, itemID) {
     if (!itemClass || !itemID) {
         throw "missing argument";
     }
 
-    xmpptk.model.call(this);
+    xmpptk.Model.call(this);
 
     this.items = {};
     this._itemClass = itemClass;
     this._itemID = itemID;
 };
-goog.inherits(xmpptk.model.collection, xmpptk.model);
+goog.inherits(xmpptk.Collection, xmpptk.Model);
 
-xmpptk.model.collection.prototype.add = function(item, skip) {
+xmpptk.Collection.prototype.add = function(item, skip) {
     if (!(item instanceof this._itemClass)) {
         throw "bad argument: not instanceof itemClass";
     }
@@ -26,7 +33,7 @@ xmpptk.model.collection.prototype.add = function(item, skip) {
     return item;
 };
 
-xmpptk.model.collection.prototype.getItem = function(id) {
+xmpptk.Collection.prototype.getItem = function(id) {
     var item = this.get('items')[id];
     if (!item) {
         var obj = {};
@@ -36,7 +43,7 @@ xmpptk.model.collection.prototype.getItem = function(id) {
     return item;
 };
 
-xmpptk.model.collection.prototype.getItems = function() {
+xmpptk.Collection.prototype.getItems = function() {
     var items = {};
     goog.object.forEach(
         this.items,
@@ -47,11 +54,11 @@ xmpptk.model.collection.prototype.getItems = function() {
     return items;
 };
 
-xmpptk.model.collection.prototype.hasItem = function(id) {
+xmpptk.Collection.prototype.hasItem = function(id) {
     return (typeof this.get('items')[id] != 'undefined');
 };
 
-xmpptk.model.collection.prototype.remove = function(item) {
+xmpptk.Collection.prototype.remove = function(item) {
     if (!(item instanceof this._itemClass)) {
         throw "bad argument: not instanceof itemClass";
     }
@@ -60,7 +67,7 @@ xmpptk.model.collection.prototype.remove = function(item) {
     return this;
 };
 
-xmpptk.model.collection.prototype.removeItem = function(id) {
+xmpptk.Collection.prototype.removeItem = function(id) {
     var item = this.get('items')[id];
     if (item) {
         this.remove(item);
@@ -68,7 +75,7 @@ xmpptk.model.collection.prototype.removeItem = function(id) {
     return this;
 };
 
-xmpptk.model.collection.prototype.setItems = function(items) {
+xmpptk.Collection.prototype.setItems = function(items) {
     this.items = {}; // reset my own items
     if (items) {
         goog.object.forEach( 
