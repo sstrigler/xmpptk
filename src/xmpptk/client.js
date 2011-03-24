@@ -1,6 +1,7 @@
 goog.provide('xmpptk.Client');
 
 goog.require('xmpptk');
+goog.require('xmpptk.Config');
 
 goog.require('goog.array');
 goog.require('goog.object');
@@ -13,7 +14,7 @@ goog.require('goog.json');
  * The actual XMPP connection that wraps all the tricky XMPP stuff.
  * @constructor
  * @extends {goog.pubsub.PubSub}
- * @param {{httpbase: string, xmppdomain: string, username: string, password: string, resource: string}} cfg A configuration
+ * @param {xmpptk.Config} cfg A configuration
  */
 xmpptk.Client = function(cfg) {
 
@@ -21,7 +22,7 @@ xmpptk.Client = function(cfg) {
 
     this._cfg = cfg;
 
-    this._con = new JSJaCHttpBindingConnection({httpbase: cfg.httpbase});
+    this._con = new JSJaCHttpBindingConnection(cfg);
 
     this._con.registerHandler('onconnect',
                               JSJaC.bind(this._handleConnected, this));
