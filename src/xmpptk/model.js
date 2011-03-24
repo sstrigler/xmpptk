@@ -1,12 +1,12 @@
 goog.provide('xmpptk.Model');
 
-goog.require('xmpptk.subject');
+goog.require('xmpptk.Subject');
 goog.require('goog.object');
 
 xmpptk.Model = function() {
-    xmpptk.subject.call(this);
+    xmpptk.Subject.call(this);
 };
-goog.inherits(xmpptk.Model, xmpptk.subject);
+goog.inherits(xmpptk.Model, xmpptk.Subject);
 
 xmpptk.Model.prototype.get = function(prop) {
     if (typeof prop == 'undefined') {

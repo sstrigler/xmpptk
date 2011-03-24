@@ -1,4 +1,4 @@
-goog.provide('xmpptk.subject');
+goog.provide('xmpptk.Subject');
 
 goog.require('goog.array');
 
@@ -6,15 +6,15 @@ goog.require('goog.array');
  * This is part of the observer pattern. A subject to observer.
  */
 
-xmpptk.subject = function() {
+xmpptk.Subject = function() {
     this._observers = [];
 };
   
-xmpptk.subject.prototype.attach = function(observer) {
+xmpptk.Subject.prototype.attach = function(observer) {
     this._observers.push(observer);
 };
 
-xmpptk.subject.prototype.detach = function(observer) {
+xmpptk.Subject.prototype.detach = function(observer) {
     // remove observer from list
     this._observers = goog.array.remove(this._observers, observer);
 
@@ -24,7 +24,7 @@ xmpptk.subject.prototype.detach = function(observer) {
     }
 };
 
-xmpptk.subject.prototype.notify = function() {
+xmpptk.Subject.prototype.notify = function() {
     goog.array.forEach(
         this._observers,
         function(o) {
