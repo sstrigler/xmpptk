@@ -6,7 +6,6 @@ goog.require('goog.json');
 goog.require('goog.debug.Logger');
 
 goog.require('xmpptk.Model');
-goog.require('xmpptk.Client');
 goog.require('xmpptk.muc.Client');
 goog.require('xmpptk.muc.Roster');
 
@@ -33,7 +32,7 @@ xmpptk.muc.Room = function(room_jid, client) {
     this.roster = new xmpptk.muc.Roster();
 
     /** @private */
-    this._client = client;
+    this._client = new xmpptk.muc.Client(client);
 };
 goog.inherits(xmpptk.muc.Room, xmpptk.Model);
 
