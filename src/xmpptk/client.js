@@ -110,12 +110,7 @@ xmpptk.Client.prototype.isConnected = function() {
 xmpptk.Client.prototype.login = function(callback, context) {
     this._logger.info("logging in with: " + goog.json.serialize(this._cfg));
     this.subscribeOnce('_login', callback, context);
-    this._con.connect({
-        'domain'   : this._cfg.xmppdomain,
-        'username' : this._cfg.username,
-        'pass'     : this._cfg.password,
-        'resource' : this._cfg.resource
-    });
+    this._con.connect(this._cfg);
 };
 
 xmpptk.Client.prototype.logout = function() {
