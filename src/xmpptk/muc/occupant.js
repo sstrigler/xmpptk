@@ -31,3 +31,9 @@ xmpptk.muc.Occupant.Role = {
     VISITOR: 'visitor',
     MODERATOR: 'moderator'
 };
+
+/** @type {xmpptk.muc.Occupant.Affiliation} */
+xmpptk.muc.Occupant.prototype.affiliation;
+
+/** @type {xmpptk.muc.Occupant.Role} */
+xmpptk.muc.Occupant.prototype.role;
