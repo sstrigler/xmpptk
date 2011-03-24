@@ -5,7 +5,6 @@ goog.require('xmpptk.Client');
 
 /**
  * @constructor
- * @param {xmpptk.Client} client
  */
 xmpptk.muc.Client = function() {
     // will it blend?
