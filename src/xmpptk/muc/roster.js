@@ -10,4 +10,4 @@ goog.require('xmpptk.muc.Occupant');
 xmpptk.muc.Roster = function() {
     xmpptk.Collection.call(this, xmpptk.muc.Occupant, 'jid');
 };
-goog.inherit(xmpptk.muc.Roser, xmpptk.Collection);
+goog.inherits(xmpptk.muc.Roster, xmpptk.Collection);
