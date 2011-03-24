@@ -1,14 +1,14 @@
-goog.provide('xmpptk.model');
+goog.provide('xmpptk.Model');
 
 goog.require('xmpptk.subject');
 goog.require('goog.object');
 
-xmpptk.model = function() {
+xmpptk.Model = function() {
     xmpptk.subject.call(this);
 };
-goog.inherits(xmpptk.model, xmpptk.subject);
+goog.inherits(xmpptk.Model, xmpptk.subject);
 
-xmpptk.model.prototype.get = function(prop) {
+xmpptk.Model.prototype.get = function(prop) {
     if (typeof prop == 'undefined') {
         // return object with all of our properties
         var obj = {};
@@ -29,7 +29,7 @@ xmpptk.model.prototype.get = function(prop) {
     throw "property not found: "+prop;
 };
 
-xmpptk.model.prototype.set = function(prop, value, skip_notify) {
+xmpptk.Model.prototype.set = function(prop, value, skip_notify) {
     if (!prop) {
         // I don't see a reason how prop could be null here but
         // somehow in MSIE it turns out to be so in some cases. At
