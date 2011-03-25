@@ -25,6 +25,8 @@ xmpptk.muc.Room = function(room_jid, client) {
     // keep calm! it's better than you think, isn't it?
     goog.object.extend(this, room_jid);
 
+    this.id = this.room+'@'+this.service;
+
     /** @type {string} */
     this.jid = this.room+'@'+this.service+'/'+this.nick;
 
@@ -33,10 +35,15 @@ xmpptk.muc.Room = function(room_jid, client) {
 
     /** @private */
     this._client = new xmpptk.muc.Client(client);
+    this._client.registerRoom(this);
 };
 goog.inherits(xmpptk.muc.Room, xmpptk.Model);
 
 xmpptk.muc.Room.prototype._logger = goog.debug.Logger.getLogger('xmpptk.muc.Room');
+
+xmpptk.muc.Room.prototype.handleGroupchatMessage = function(oMsg) {
+    this._logger.info("room got a message: "+oMsg.xml());
+};
 
 xmpptk.muc.Room.prototype.join = function() {
     this._logger.info("joining room "+this.jid);
