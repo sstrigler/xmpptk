@@ -199,6 +199,9 @@ xmpptk.Client.prototype._handleMessage = function(m) {
     if (m.getBody() === '') { // hu?
         return;
     }
+
+    this._logger.info("handling message: "+m.xml());
+
     var message =  {
         from  : m.getFromJID().removeResource().toString(),
         body  : m.getBody(),
@@ -219,7 +222,7 @@ xmpptk.Client.prototype._handleMessage = function(m) {
         );
     }
 
-    this.publish('message', message);
+    this._ps.publish('message', message);
 };
 
 xmpptk.Client.prototype._handlePresence = function(p) {
@@ -229,7 +232,7 @@ xmpptk.Client.prototype._handlePresence = function(p) {
     }
     if (p.getType() && p.getType().match(/subscribe/)) {
         // it's got to do sth with subscriptions
-        return this.publish(
+        return this._ps.publish(
             'subscription',
             {
                 from    : p.getFromJID().removeResource().toString(),
@@ -246,7 +249,7 @@ xmpptk.Client.prototype._handlePresence = function(p) {
             state = p.getShow();
         }
     }
-    this.publish(
+    this._ps.publish(
         'presence',
         {
             from: p.getFrom(),
@@ -264,7 +267,7 @@ xmpptk.Client.prototype._handleRosterPush = function(resIQ) {
         resIQ.getQuery().children,
         goog.bind(
             function(i, item) {
-                this.publish(
+                this._ps.publish(
                     'roster_push',
                     {
                         jid          : item.getAttribute('jid'),
