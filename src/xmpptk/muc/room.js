@@ -35,26 +35,32 @@ xmpptk.muc.Room = function(room_jid, client) {
 
     /** @private */
     this._client = new xmpptk.muc.Client(client);
-    this._client.registerRoom(this);
 };
 goog.inherits(xmpptk.muc.Room, xmpptk.Model);
 
 xmpptk.muc.Room.prototype._logger = goog.debug.Logger.getLogger('xmpptk.muc.Room');
 
-xmpptk.muc.Room.prototype.handleGroupchatMessage = function(oMsg) {
+xmpptk.muc.Room.prototype.handleGroupchat_message = function(oMsg) {
     this._logger.info("room got a message: "+oMsg.xml());
+};
+
+xmpptk.muc.Room.prototype.handleGroupchat_presence = function(oPres) {
+    this._logger.info("room got a presence: "+oPres.xml());
 };
 
 xmpptk.muc.Room.prototype.join = function() {
     this._logger.info("joining room "+this.jid);
-    // setup handlers
+
+    // register handlers
+    this._client.registerRoom(this);
 
     // send presence to rooms jid
     this._client.sendPresence('available', undefined, this.jid);
 };
 
 xmpptk.muc.Room.prototype.part = function() {
-    // disconnect handlers
+    // unregister handlers
+    this._client.unregisterRoom(this);
 
     // send presence
     this._client.sendPresence('unavailable', undefined, this.jid);
