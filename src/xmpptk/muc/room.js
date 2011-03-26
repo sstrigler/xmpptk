@@ -16,7 +16,7 @@ xmpptk.muc.RoomJid;
  * @constructor
  * @inherits {xmpptk.Model}
  * @param {xmpptk.muc.RoomJID} room_jid Config to denote the rooms identity
- * @param {xmpptk.Client} client 
+ * @param {xmpptk.Client} client
  */
 xmpptk.muc.Room = function(room_jid, client) {
     this._logger.info("creating room " + goog.json.serialize(room_jid));
@@ -46,6 +46,25 @@ xmpptk.muc.Room.prototype.handleGroupchat_message = function(oMsg) {
 
 xmpptk.muc.Room.prototype.handleGroupchat_presence = function(oPres) {
     this._logger.info("room got a presence: "+oPres.xml());
+
+    var from = oPres.getFrom();
+    if (oPres.getType() == 'unavailable') {
+        if (this.roster.hasItem(from)) {
+            this.roster.removeItem(from);
+        }
+        return;
+    }
+
+    var occupant = this.roster.getItem(from);
+
+    var item = oPres.getChild('item', xmpptk.muc.NS.USER);
+    if (item) {
+        occupant.set({
+            affiliation: item.getAttribute('affiliation'),
+            role:        item.getAttribute('role'),
+            real_jid:    item.getAttribute('jid')
+        });
+    }
 };
 
 xmpptk.muc.Room.prototype.join = function() {

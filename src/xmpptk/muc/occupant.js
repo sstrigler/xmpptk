@@ -10,6 +10,7 @@ goog.require('xmpptk.Model');
  */
 xmpptk.muc.Occupant = function(jid) {
     xmpptk.Model.call(this);
+    this.set(jid);
 };
 goog.inherits(xmpptk.muc.Occupant, xmpptk.Model);
 
