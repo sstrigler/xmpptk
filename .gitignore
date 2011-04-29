@@ -1,3 +1,6 @@
 .#*
 xmpptk.js
 deps.js
+htdocs/.htaccess
+htdocs/helpim.js
+htdocs/jsjac.js
