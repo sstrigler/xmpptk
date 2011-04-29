@@ -58,5 +58,6 @@ xmpptk.muc.Client.prototype._handleGroupchatPacket = function(oJSJaCPacket) {
 
 /** @enum {string} */
 xmpptk.muc.NS = {
+    BASE: 'http://jabber.org/protocol/muc',
     USER: 'http://jabber.org/protocol/muc#user'
 };

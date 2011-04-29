@@ -16,9 +16,10 @@ xmpptk.muc.RoomJid;
  * @constructor
  * @inherits {xmpptk.Model}
  * @param {xmpptk.muc.RoomJID} room_jid Config to denote the rooms identity
- * @param {xmpptk.Client} client
+ * @param {xmpptk.muc.Client} client
+ * @param {?string} password
  */
-xmpptk.muc.Room = function(room_jid, client) {
+xmpptk.muc.Room = function(room_jid, client, password) {
     this._logger.info("creating room " + goog.json.serialize(room_jid));
     xmpptk.Model.call(this);
 
@@ -29,6 +30,9 @@ xmpptk.muc.Room = function(room_jid, client) {
 
     /** @type {string} */
     this.jid = this.room+'@'+this.service+'/'+this.nick;
+
+    /** @type {string} */
+    this.password = password || '';
 
     /** @type {xmpptk.muc.Roster} */
     this.roster = new xmpptk.muc.Roster();
@@ -74,7 +78,10 @@ xmpptk.muc.Room.prototype.join = function() {
     this._client.registerRoom(this);
 
     // send presence to rooms jid
-    this._client.sendPresence('available', undefined, this.jid);
+    var password = (this.password=='')?[]:[{'password', this.password}];
+    var payload = {'x', {'xmlns': xmpptk.muc.NS.BASE}, password};
+
+    this._client.sendPresence('available', undefined, this.jid, payload);
 };
 
 xmpptk.muc.Room.prototype.part = function() {
