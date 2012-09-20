@@ -3,10 +3,11 @@ goog.provide('xmpptk.Client');
 goog.require('xmpptk');
 goog.require('xmpptk.Config');
 goog.require('xmpptk.Model');
+goog.require('xmpptk.Roster');
+goog.require('xmpptk.RosterItem');
 
 goog.require('goog.array');
 goog.require('goog.object');
-goog.require('goog.pubsub.PubSub');
 goog.require('goog.debug.Logger');
 
 goog.require('goog.json');
@@ -19,7 +20,97 @@ goog.require('goog.json');
 xmpptk.Client = function() {
     xmpptk.Model.call(this);
 
-    this._ps = new goog.pubsub.PubSub();
+    /** @type {xmpptk.Roster} */
+    this.roster = new xmpptk.Roster(this);
+};
+goog.inherits(xmpptk.Client, xmpptk.Model);
+goog.addSingletonGetter(xmpptk.Client);
+
+/**
+ * @type {goog.debug.Logger}
+ * @protected
+*/
+xmpptk.Client.prototype._logger = goog.debug.Logger.getLogger('xmpptk.Client');
+
+xmpptk.Client.prototype.getRoster = function(callback, context) {
+    var iq = new JSJaCIQ();
+    iq.setType('get');
+    iq.setQuery(NS_ROSTER);
+
+    this._con.sendIQ(iq, {
+        'result_handler': goog.bind(function(resIQ) {
+            this.roster.setItems(
+                goog.array.map(
+                    resIQ.getQuery().getElementsByTagName('item'),
+                    function(item) {
+                        return {
+                            'jid'          : item.getAttribute('jid'),
+                            'name'         : item.getAttribute('name'),
+                            'subscription' : item.getAttribute('subscription'),
+                            'client'       : this
+                        };
+                    },
+                    this)
+            );
+
+            if (typeof callback == 'function')
+                xmpptk.call(callback, context, this.roster);
+        }, this),
+        'error_handler': goog.bind(function() {
+            if (typeof callback == 'function')
+                xmpptk.call(callback, context, this.roster);
+        }, this)
+    });
+};
+
+xmpptk.Client.prototype.getState = function(callback, context) {
+    var iq = new JSJaCIQ();
+    iq.setType('get');
+    var query = iq.setQuery(NS_PRIVATE);
+
+    query.appendChild(iq.buildNode('xmpptk', {xmlns: xmpptk.Client.NS.XMPPTK_STATE}));
+
+    this._con.sendIQ(iq,
+                     {'result_handler':
+                      function(resIQ) {
+                          var state = resIQ.getChildVal('xmpptk', xmpptk.Client.NS.XMPPTK_STATE);
+                          xmpptk.call(callback, context, state);
+                      }
+                     });
+};
+
+/**
+ * retrieve an entity's vCard
+ * @param {string} jid the bare jid of the entity to retrive vCard for
+ * @param {function(object)} callback a callback to be called with the result of the query
+ * @param {object?} context optional context to call callback with
+ */
+xmpptk.Client.prototype.getVCard = function(jid, callback, context) {
+    var iq = new JSJaCIQ();
+    iq.setTo(jid);
+    iq.setType('get');
+    iq.appendNode('vCard', {'xmlns': 'vcard-temp'});
+
+    this._con.sendIQ(iq, {
+        'result_handler': goog.bind(function(resIq) {
+            var vCard;
+            var vCardEl = resIq.getChild('vCard');
+            if (vCardEl) {
+                vCard = goog.json.parse(xmpptk.xml2json(vCardEl, " ")).vCard;
+            }
+            xmpptk.call(callback, context, vCard);
+        }, this)
+    });
+};
+
+xmpptk.Client.prototype.isConnected = function() {
+    return this._con.connected();
+};
+
+xmpptk.Client.prototype.login = function(callback, context) {
+    this._logger.info("logging in with: " + goog.json.serialize(xmpptk.Config));
+
+    this.subscribeOnce('_login', callback, context);
 
     this._con = new JSJaCHttpBindingConnection(xmpptk.Config);
 
@@ -28,9 +119,18 @@ xmpptk.Client = function() {
 
     this._con.registerHandler('ondisconnect',
                               JSJaC.bind(function() {
-                                  this._ps.publish('disconnected',
+                                  this.publish('disconnected',
                                                   this._con.status() == 'session-terminate-conflict');
                               },this));
+
+    this._con.registerHandler('onerror',
+                              JSJaC.bind(function(e) {
+                                  var error = {code: e.getAttribute('code'),
+                                               type: e.getAttribute('type'),
+                                               condition: e.firstChild.nodeName};
+                                  this._logger.info("an error occured: "+goog.json.serialize(error));
+                                  this.publish('error', error);
+                              }, this));
 
     this._con.registerHandler('presence',
                               JSJaC.bind(this._handlePresence, this));
@@ -50,72 +150,14 @@ xmpptk.Client = function() {
                               JSJaC.bind(function(packet) {
                                   this._logger.fine("[OUT]: "+packet.xml());
                               }, this));
-};
-goog.inherits(xmpptk.Client, xmpptk.Model);
-goog.addSingletonGetter(xmpptk.Client);
 
-/**
- * @type {goog.debug.Logger}
- * @protected
-*/
-xmpptk.Client.prototype._logger = goog.debug.Logger.getLogger('xmpptk.Client');
-
-xmpptk.Client.prototype.getRoster = function(callback, context) {
-    var iq = new JSJaCIQ();
-    iq.setType('get');
-    iq.setQuery(NS_ROSTER);
-
-    this._con.sendIQ(iq, {
-        result_handler: function(resIQ) {
-            var roster = [];
-            goog.array.forEach(resIQ.getQuery().children,
-                               function(i, item) {
-                                   roster.push(
-                                       {
-                                           jid          : item.getAttribute('jid'),
-                                           name         : item.getAttribute('name'),
-                                           subscription : item.getAttribute('subscription')
-                                       }
-                                   );
-                               });
-
-            xmpptk.call(callback, context, roster);
-        },
-        error_handler: function() {
-            xmpptk.call(callback, context, []);
-        }
-    });
-};
-
-xmpptk.Client.prototype.getState = function(callback, context) {
-    var iq = new JSJaCIQ();
-    iq.setType('get');
-    var query = iq.setQuery(NS_PRIVATE);
-
-    query.appendChild(iq.buildNode('xmpptk', {xmlns: xmpptk.Client.ns.XMPPTK_STATE}));
-
-    this._con.sendIQ(iq,
-                     {result_handler:
-                      function(resIQ) {
-                          var state = resIQ.getChildVal('xmpptk', xmpptk.Client.ns.XMPPTK_STATE);
-                          xmpptk.call(callback, context, state);
-                      }
-                     });
-};
-
-
-xmpptk.Client.prototype.isConnected = function() {
-    return this._con.connected();
-};
-
-xmpptk.Client.prototype.login = function(callback, context) {
-    this._logger.info("logging in with: " + goog.json.serialize(xmpptk.Config));
-    this._ps.subscribeOnce('_login', callback, context);
     this._con.connect(xmpptk.Config);
+    return this;
 };
 
 xmpptk.Client.prototype.logout = function() {
     this._con.disconnect();
+    return this;
 };
 
 xmpptk.Client.prototype.resume = function() {
@@ -128,13 +170,22 @@ xmpptk.Client.prototype.rosterItemSet = function(item, callback) {
     iq.setQuery(NS_ROSTER).appendChild(
         iq.buildNode(
             'item',
-            goog.object.extend(item, {xmlns: NS_ROSTER})
+            goog.object.extend(item, {'xmlns': NS_ROSTER})
         )
     );
-    this._con.sendIQ(iq, {error_handler: callback, result_handler: callback});
+    this._con.sendIQ(iq, {'error_handler': callback, 'result_handler': callback});
 };
 
-xmpptk.Client.prototype.sendPresence = function(state, message, jid, payload) {
+/**
+ * send a packet
+ * @param {JSJaCPacket} packet the packet to send over the wire
+ * @return {boolean} whether enqueing packet succeeded
+ */
+xmpptk.Client.prototype.send = function(packet) {
+    return this._con.send(packet);
+};
+
+xmpptk.Client.prototype.sendPresence = function(state, message, jid, extra) {
     var p = new JSJaCPresence();
     p.setTo(jid);
 
@@ -149,10 +200,10 @@ xmpptk.Client.prototype.sendPresence = function(state, message, jid, payload) {
     if (message) {
         p.setStatus(message);
     }
-    if (payload) {
-        p.appendNode(payload);
+    if (extra && typeof extra == 'function') {
+        extra(p);
     }
-    this._con.send(p);
+    this.send(p);
 };
 
 xmpptk.Client.prototype.sendMessage = function(jid, message) {
@@ -161,7 +212,7 @@ xmpptk.Client.prototype.sendMessage = function(jid, message) {
     m.setType('chat');
     m.setBody(message);
 
-    this._con.send(m);
+    this.send(m);
 };
 
 xmpptk.Client.prototype.sendState = function(state) {
@@ -171,12 +222,12 @@ xmpptk.Client.prototype.sendState = function(state) {
         appendChild(
             iq.buildNode(
                 'xmpptk',
-                {xmlns: xmpptk.Client.ns.XMPPTK_STATE},
+                {'xmlns': xmpptk.Client.NS.XMPPTK_STATE},
                 state
             )
         );
 
-    this._con.send(iq);
+    this.send(iq);
 };
 
 xmpptk.Client.prototype.sendSubscription = function(jid, type, message) {
@@ -186,7 +237,7 @@ xmpptk.Client.prototype.sendSubscription = function(jid, type, message) {
     if (message) {
         p.setStatus(message);
     }
-    this._con.send(p);
+    this.send(p);
 };
 
 xmpptk.Client.prototype.suspend = function() {
@@ -194,8 +245,8 @@ xmpptk.Client.prototype.suspend = function() {
 };
 
 xmpptk.Client.prototype._handleConnected = function() {
-    this._ps.publish('connected');
-    this._ps.publish('_login');
+    this.publish('connected');
+    this.publish('_login');
 };
 
 xmpptk.Client.prototype._handleMessage = function(m) {
@@ -206,63 +257,66 @@ xmpptk.Client.prototype._handleMessage = function(m) {
     this._logger.info("handling message: "+m.xml());
 
     var message =  {
-        from  : m.getFromJID().removeResource().toString(),
-        body  : m.getBody(),
-        ts    : (new Date()).getTime()
+        'from'  : m.getFromJID().removeResource().toString(),
+        'body'  : m.getBody(),
+        'ts'    : (new Date()).getTime()
     };
     if (m.getType() == 'error') {
         var e = m.getChild('error');
         message = goog.object.extend(
             message,
             {
-                error:
+                'error':
                 {
-                    code: e.getAttribute('code'),
-                    type: e.getAttribute('type'),
-                    cond: e.firstChild.tagName
+                    'code': e.getAttribute('code'),
+                    'type': e.getAttribute('type'),
+                    'cond': e.firstChild.tagName
                 }
             }
         );
     }
 
-    this._ps.publish('message', message);
+    this.publish('message', message);
 };
 
 xmpptk.Client.prototype._handlePresence = function(p) {
-    if (p.getFromJID().isEntity(new JSJaCJID(this._con.jid))) {
+    if (p.getFromJID().isEntity(new JSJaCJID(this._con['jid']))) {
         // a presence from ourselves
         return;
     }
     if (p.getType() && p.getType().match(/subscribe/)) {
         // it's got to do sth with subscriptions
-        return this._ps.publish(
+        return this.publish(
             'subscription',
             {
-                from    : p.getFromJID().removeResource().toString(),
-                type    : p.getType(),
-                message : p.getStatus()
+                'from'    : p.getFromJID().removeResource().toString(),
+                'type'    : p.getType(),
+                'status'  : p.getStatus()
             }
         );
     }
-    var state = 'available';
+
+    var show = 'available';
     if (p.getType() == 'unavailable') {
-        state = 'unavailable';
+        show = 'unavailable';
     } else {
         if (p.getShow() !== '') {
-            state = p.getShow();
+            show = p.getShow();
         }
     }
-    this._ps.publish(
+
+    this.publish(
         'presence',
         {
-            from: p.getFrom(),
-            presence :
+            'from': p.getFromJID(),
+            'presence' :
             {
-                state   : state,
-                message : p.getStatus()
+                'show'     : show,
+                'status'   : p.getStatus(),
+                'priority' : p.getPriority() || 0
             }
         }
-    );
+    ); 
 };
 
 xmpptk.Client.prototype._handleRosterPush = function(resIQ) {
@@ -270,12 +324,12 @@ xmpptk.Client.prototype._handleRosterPush = function(resIQ) {
         resIQ.getQuery().children,
         goog.bind(
             function(i, item) {
-                this._ps.publish(
+                this.publish(
                     'roster_push',
                     {
-                        jid          : item.getAttribute('jid'),
-                        name         : item.getAttribute('name'),
-                        subscription : item.getAttribute('subscription')
+                        'jid'          : item.getAttribute('jid'),
+                        'name'         : item.getAttribute('name'),
+                        'subscription' : item.getAttribute('subscription')
                     }
                 );
             },
@@ -284,13 +338,13 @@ xmpptk.Client.prototype._handleRosterPush = function(resIQ) {
     );
 
     // send 'result' reply
-    this._con.send(
+    this.send(
         new JSJaCIQ().setIQ(
             this._con.domain, 'result', resIQ.getID()
         )
     );
 };
 
-xmpptk.Client.ns = {
+xmpptk.Client.NS = {
     XMPPTK_STATE: 'xmpptk:state'
 };

@@ -1,0 +1,428 @@
+body{
+    background-color:#ffe;
+    font:normal 10pt Arial,sans-serif;
+}
+
+fieldset{
+    padding:4px 8px;
+    margin-bottom:1em;
+}
+
+fieldset legend{
+    font-weight:bold;
+    color:#036;
+}
+
+label,input{
+    vertical-align:middle;
+}
+
+.hint{
+    font-size:90%;
+    color:#369;
+}
+
+.goog-debug-panel{
+    border:1px solid #369;
+}
+
+.goog-debug-panel .logdiv{
+    position:relative;
+    width:100%;
+    height:20em;
+    overflow:scroll;
+    overflow-x:hidden;
+    overflow-y:scroll;
+}
+
+.goog-debug-panel .logdiv .logmsg{
+    font:normal 10px"Lucida Sans Typewriter","Courier New",Courier,fixed;
+}
+
+.perf{
+    margin:0;
+    border:0;
+    padding:4px;
+    font:italic 95% Arial,sans-serif;
+    color:#999;}
+
+#perf{
+    position:absolute;
+    right:0;
+    bottom:0;
+    text-align:right;
+    margin:0;
+    border:0;
+    padding:4px;
+    font:italic 95% Arial,sans-serif;
+    color:#999;
+}
+
+.goog-tab-bar {
+  border: 0;
+  cursor: default;
+  list-style: none;
+  margin: 0;
+  outline: none;
+  padding: 0;
+  position: relative;
+}
+ 
+.goog-tab-bar-clear {
+  clear: left;
+  height: 0;
+  overflow: hidden;
+}
+ 
+.goog-tab-bar-start {
+  float: left;
+}
+ 
+.goog-tab-bar-end {
+  float: right;
+}
+
+/*
+ * IE6-only hacks to fix the gap between the floated tabs and the content.
+ * IE7 and later will ignore these.
+ */
+/* @if user.agent ie6 */
+* html .goog-tab-bar-start {
+  margin-right: -3px;
+}
+ 
+* html .goog-tab-bar-end {
+  margin-left: -3px;
+}
+/* @endif */
+
+fieldset {
+    padding: 10px;
+    border: 1px solid #369;
+}
+ 
+.goog-tab-content {
+/*height: 9em;*/
+/*height: 100%;*/
+/*margin: 0;*/
+    border: 1px solid #6b90da;
+    border-top: 0;
+    padding: 4px 8px;
+    margin-right: 210px;
+    background: #fff;
+    overflow: auto;
+}
+
+.goog-tab{background:#ddd;border:1px solid #369;color:#333;cursor:default;padding:4px 8px;position:relative;}
+.goog-tab-bar-top .goog-tab{border-bottom:0;float:left;margin:1px 4px 0 0;}
+.goog-tab-bar-bottom .goog-tab{border-top:0;float:left;margin:0 4px 1px 0;}
+.goog-tab-bar-start .goog-tab{border-right:0;margin:0 0 4px 1px;}
+.goog-tab-bar-end .goog-tab{border-left:0;margin:0 1px 4px 0;}/**/
+.goog-tab-hover{background:#eee;}/**/
+.goog-tab-disabled{background:#ccc;border-color:#ccc;color:#fff;}/**/
+.goog-tab-selected{background:#fff!important;/**/}/**/
+.goog-tab-bar-top .goog-tab-selected{margin-top:0;padding-bottom:5px;top:1px;}
+.goog-tab-bar-bottom .goog-tab-selected{margin-bottom:0;padding-top:5px;top:-1px;}
+.goog-tab-bar-start .goog-tab-selected{left:1px;margin-left:0;padding-right:9px;}
+.goog-tab-bar-end .goog-tab-selected{left:-1px;margin-right:0;padding-left:9px;}
+
+.goog-rounded-tab{border:0;cursor:default;padding:0;}
+.goog-tab-bar-top .goog-rounded-tab,.goog-tab-bar-bottom .goog-rounded-tab{float:left;margin:0 4px 0 0;}
+.goog-tab-bar-start .goog-rounded-tab,.goog-tab-bar-end .goog-rounded-tab{margin:0 0 4px 0;}
+.goog-rounded-tab-caption{border:0;color:#fff;margin:0;padding:4px 8px;}
+.goog-rounded-tab-caption,.goog-rounded-tab-inner-edge,.goog-rounded-tab-outer-edge{background:#036;border-right:1px solid #003;}
+.goog-rounded-tab-inner-edge,.goog-rounded-tab-outer-edge{font-size:1px;height:1px;overflow:hidden;}/**/
+.goog-rounded-tab-hover .goog-rounded-tab-caption,.goog-rounded-tab-hover .goog-rounded-tab-inner-edge,.goog-rounded-tab-hover .goog-rounded-tab-outer-edge{background-color:#8c2425;border-right:1px solid #369;}/**/
+.goog-rounded-tab-disabled .goog-rounded-tab-caption,.goog-rounded-tab-disabled .goog-rounded-tab-inner-edge,.goog-rounded-tab-disabled .goog-rounded-tab-outer-edge{background:#ccc;border-right:1px solid #ccc;}
+.goog-rounded-tab-selected .goog-rounded-tab-caption,.goog-rounded-tab-selected .goog-rounded-tab-inner-edge,.goog-rounded-tab-selected .goog-rounded-tab-outer-edge{background:#369!important;/**/border-right:1px solid #036!important;}/**/
+.goog-tab-bar-top .goog-rounded-tab{vertical-align:bottom;}
+.goog-tab-bar-bottom .goog-rounded-tab{vertical-align:top;}
+.goog-tab-bar-top .goog-rounded-tab-outer-edge,.goog-tab-bar-bottom .goog-rounded-tab-outer-edge{margin:0 3px;}
+.goog-tab-bar-top .goog-rounded-tab-inner-edge,.goog-tab-bar-bottom .goog-rounded-tab-inner-edge{margin:0 1px;}/**/
+.goog-tab-bar-start .goog-rounded-tab-table,.goog-tab-bar-end .goog-rounded-tab-table{width:100%;}
+.goog-tab-bar-start .goog-rounded-tab-inner-edge{margin-left:1px;}
+.goog-tab-bar-start .goog-rounded-tab-outer-edge{margin-left:3px;}
+.goog-tab-bar-end .goog-rounded-tab-inner-edge{margin-right:1px;}
+.goog-tab-bar-end .goog-rounded-tab-outer-edge{margin-right:3px;}/**/
+.goog-tab-bar-start .goog-rounded-tab-table,.goog-tab-bar-end .goog-rounded-tab-table{width:12ex;/**/}
+.goog-tab-bar-start .goog-rounded-tab-caption,.goog-tab-bar-start .goog-rounded-tab-inner-edge,.goog-tab-bar-start .goog-rounded-tab-outer-edge{border-left:1px solid #003;border-right:0;}
+.goog-tab-bar-start .goog-rounded-tab-hover .goog-rounded-tab-caption,.goog-tab-bar-start .goog-rounded-tab-hover .goog-rounded-tab-inner-edge,.goog-tab-bar-start .goog-rounded-tab-hover .goog-rounded-tab-outer-edge{border-left:1px solid #369!important;border-right:0!important;}
+.goog-tab-bar-start .goog-rounded-tab-selected .goog-rounded-tab-outer-edge,.goog-tab-bar-start .goog-rounded-tab-selected .goog-rounded-tab-inner-edge,.goog-tab-bar-start .goog-rounded-tab-selected .goog-rounded-tab-caption{border-left:1px solid #036!important;border-right:0!important;}
+.goog-tab-bar-start .goog-rounded-tab-disabled .goog-rounded-tab-outer-edge,.goog-tab-bar-start .goog-rounded-tab-disabled .goog-rounded-tab-inner-edge,.goog-tab-bar-start .goog-rounded-tab-disabled .goog-rounded-tab-caption{border-left:1px solid #ccc!important;border-right:0!important;}
+
+.goog-bubble-font{font-size:80%;color:#888888;}
+/*.goog-bubble-close-button{background-image:url(http://ssl.gstatic.com/closure/bubble_close.jpg);background-color:white;background-position:top right;background-repeat:no-repeat;width:16px;height:16px;} */
+.goog-bubble-left{background-image:url(http://ssl.gstatic.com/closure/bubble_left.gif);background-position:left;background-repeat:repeat-y;width:4px;}
+.goog-bubble-right{background-image:url(http://ssl.gstatic.com/closure/bubble_right.gif);background-position:right;background-repeat:repeat-y;width:4px;}
+.goog-bubble-top-right-anchor{background-image:url(http://ssl.gstatic.com/closure/right_anchor_bubble_top.gif);background-position:center;background-repeat:no-repeat;width:147px;height:16px;}
+.goog-bubble-top-left-anchor{background-image:url(http://ssl.gstatic.com/closure/left_anchor_bubble_top.gif);background-position:center;background-repeat:no-repeat;width:147px;height:16px;}
+.goog-bubble-top-no-anchor{background-image:url(http://ssl.gstatic.com/closure/no_anchor_bubble_top.gif);background-position:center;background-repeat:no-repeat;width:147px;height:6px;}
+.goog-bubble-bottom-right-anchor{background-image:url(http://ssl.gstatic.com/closure/right_anchor_bubble_bot.gif);background-position:center;background-repeat:no-repeat;width:147px;height:16px;}
+.goog-bubble-bottom-left-anchor{background-image:url(http://ssl.gstatic.com/closure/left_anchor_bubble_bot.gif);background-position:center;background-repeat:no-repeat;width:147px;height:16px;}
+.goog-bubble-bottom-no-anchor{background-image:url(http://ssl.gstatic.com/closure/no_anchor_bubble_bot.gif);background-position:center;background-repeat:no-repeat;width:147px;height:8px;}
+
+/*
+ * Copyright 2009 The Closure Library Authors. All Rights Reserved.
+ *
+ * Use of this source code is governed by the Apache License, Version 2.0.
+ * See the COPYING file for details.
+ */
+
+/*
+ * Styling for flat buttons created by goog.ui.FlatButtonRenderer.
+ *
+ * @author brianp@google.com (Brian Peterson)
+ */
+
+.goog-flat-button {
+  position: relative;
+  /*width: 20ex;*/
+  margin: 2px;
+  border: 1px solid #000;
+  padding: 2px 6px;
+  font: normal 13px "Trebuchet MS", Tahoma, Arial, sans-serif;
+  color: #fff;
+  background-color: #8c2425;
+  cursor: pointer;
+  outline: none;
+  -moz-outline: none;
+}
+
+/* State: disabled. */
+.goog-flat-button-disabled {
+  border-color: #888;
+  color: #888;
+  background-color: #ccc;
+  cursor: default;
+}
+
+/* State: hover. */
+.goog-flat-button-hover {
+  border-color: #8c2425;
+  color: #8c2425;
+  background-color: #eaa4a5;
+}
+
+/* State: active, selected, checked. */
+.goog-flat-button-active,
+.goog-flat-button-selected,
+.goog-flat-button-checked {
+  border-color: #5b4169;
+  color: #5b4169;
+  background-color: #d1a8ea;
+}
+
+/* State: focused. */
+.goog-flat-button-focused {
+  border-color: #5b4169;
+}
+
+/* Pill (collapsed border) styles. */
+.goog-flat-button-collapse-right {
+  margin-right: 0;
+}
+
+.goog-flat-button-collapse-left {
+  margin-left: 0;
+  border-left: none;
+}
+
+/*
+ * Copyright 2009 The Closure Library Authors. All Rights Reserved.
+ *
+ * Use of this source code is governed by the Apache License, Version 2.0.
+ * See the COPYING file for details.
+ */
+
+/*
+ * Standard styling for goog.ui.Dialog.
+ *
+ * @author ssaviano@google.com (Steven Saviano)
+ * @author attila@google.com (Attila Bodis)
+ */
+
+.modal-dialog {
+  background: #c1d9ff;
+  border: 1px solid #3a5774;
+  color: #000;
+  padding: 4px;
+  position: absolute;
+  width: 430px;
+}
+
+.modal-dialog a,
+.modal-dialog a:link,
+.modal-dialog a:visited  {
+  color: #06c;
+  cursor: pointer;
+}
+
+.modal-dialog-bg {
+  background: #666;
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.modal-dialog-title {
+  background: #e0edfe;
+  color: #000;
+  cursor: pointer;
+  font-size: 120%;
+  font-weight: bold;
+
+  /* Add padding on the right to ensure the close button has room. */
+  padding: 8px 31px 8px 8px;
+
+  position: relative;
+  _zoom: 1; /* Ensures proper width in IE6 RTL. */
+}
+
+.modal-dialog-title-close {
+  /* Client apps may override the URL at which they serve the sprite. */
+  background: #e0edfe url(images/editortoolbar.png) no-repeat -528px 0;
+  cursor: default;
+  height: 15px;
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  width: 15px;
+  vertical-align: middle;
+}
+
+.modal-dialog-buttons,
+.modal-dialog-content {
+  background-color: #fff;
+  padding: 8px;
+}
+
+.goog-buttonset-default {
+  font-weight: bold;
+}
+
+div#chatClient {
+    padding: 10px;
+    text-align: left;
+}
+
+#tabBar {
+    height: 32px;
+}
+
+div#roster {
+    float: right;
+    width: 180px;
+    height: 482px;
+    border: 1px solid #6b90da;
+    padding: 4px 8px;
+    background: #fff;
+    overflow: auto;
+}
+
+.messagesPanel {
+    overflow: auto;
+    height: 400px;
+    border: 1px solid black;
+    padding: 10px;
+    font-size: 1em;
+}
+
+.plugins {
+    padding: 4px;
+}
+
+.emoticonsButton {
+    border: 0;
+    background-image: url('../images/emoticons/smile.gif');
+    height: 15px;
+    width: 15px;
+}
+
+.emoticonBtn {
+    padding: 2px; 
+}
+
+.sendDiv {
+    border: 1px solid black;
+}
+
+.sendPanel {
+    overflow: hidden;
+    height: auto;
+    margin-right: 60px;
+}
+
+.sendButton {
+    float: right;
+    padding: 4px;
+    height: 36px;
+}
+
+.sendPanel textarea {
+    border: 0;
+    padding: 4px;
+    resize: none;
+    width: 100%;
+    height: 34px !important;
+    font:normal 10pt Arial,sans-serif;
+}
+
+.me_chat_message {
+    color: blue;
+}
+
+.other_chat_message {
+    color: red;
+}
+
+.me_message {
+    color: green;
+}
+
+#roster ul {
+    padding: 0;
+    margin: 0;
+}
+
+#roster ul.roster_itemMenuBar li {
+    display: inline;
+}
+
+#roster ul.roster_itemMenuBar li:before {
+    content: ' | ';
+}
+
+#roster ul.roster_itemMenuBar li.first:before {
+    content: '';
+}
+
+#roster ul.roster_items li { 
+    cursor: pointer;
+    list-style-type: none;
+    padding: 4px 0px;
+    border-bottom: 1px solid #999;
+}
+
+.rosterItem_presence_available, .rosterItem_presence_chat  {
+    color: green;
+}
+
+.rosterItem_presence_away, .rosterItem_presence_xa, .rosterItem_presence_dnd {
+    color: red;
+}
+
+.rosterItem_presence_unavailable {
+/*    display:none; */
+}
+
+.rosterItem_selected {
+    background-color: #99a;
+    color: white;
+}
+
+.rosterItem_avatar {
+    width: 32px;
+    height: 32px;
+    vertical-align: top;
+    padding-right: 4px;
+}

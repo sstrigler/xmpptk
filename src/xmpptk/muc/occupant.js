@@ -6,7 +6,7 @@ goog.require('xmpptk.Model');
 
 /**
  * @constructor
- * @inherits {xmpptk.Model}
+ * @extends {xmpptk.Model}
  */
 xmpptk.muc.Occupant = function(jid) {
     xmpptk.Model.call(this);
@@ -36,3 +36,7 @@ xmpptk.muc.Occupant.prototype.affiliation;
 
 /** @type {xmpptk.muc.Occupant.Role} */
 xmpptk.muc.Occupant.prototype.role;
+
+xmpptk.muc.Occupant.prototype.getNick = function() {
+    return new JSJaCJID(this.get('jid')).getResource();
+};

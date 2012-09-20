@@ -1,43 +1,73 @@
 goog.provide('xmpptk.ui');
+goog.provide('xmpptk.ui.View');
 
-goog.require('xmpptk.observer');
+goog.require('xmpptk.Observer');
+goog.require('xmpptk.Model');
 goog.require('xmpptk.ui.emoticons');
 
 goog.require('goog.object');
 goog.require('goog.array');
 
-xmpptk.ui = function() {
-    xmpptk.observer.call(this);
+/**
+ * @constructor
+ * @param {xmpptk.Model} model
+ */
+xmpptk.ui.View = function(model) {
+    xmpptk.Observer.call(this, model);
 };
-goog.inherits(xmpptk.ui, xmpptk.observer);
+goog.inherits(xmpptk.ui.View, xmpptk.Observer);
 
 xmpptk.ui.MAX_WORD_LENGTH = 28;
 
-xmpptk.ui.cropLongWords = function(msg, length, forceBreak) {
+/**
+ * Cut a string at given length (and append '...' if too long)
+ *
+ * @param {string} str the string to cut
+ * @param {int} len the maximum length of the string
+ */
+xmpptk.ui.cut = function(str, len) {
+    if (!str) {
+      return '';
+    }
+    if (str.length > len) {
+      return str.substring(0, len-3)+"...";
+    }
+    return str;
+};
+
+/**
+ * makes sure we don't have words within a message that are too long
+ * for a single line
+ *
+ * @param {string} msg the message to parse
+ * @param {int} length the maximum length allowed for a word
+ * @param {boolean} forceBreak wether to use <br> or <wbr> for splitting up words
+ */
+ xmpptk.ui.cropLongWords = function(msg, length, forceBreak) {
     var ret = [];
     goog.array.forEach(
-    msg.split(" "),
-    function(word) {
-      if (word.length > length) {
-	var tokens = [];
-	while (word.length >= length) {
-	  tokens.push(word.slice(0, length));
-	  word = word.slice(length);
-	}
-        if (word) {
-          tokens.push(word);
-        }
-
-        if ( forceBreak == true ) {
-        	word = tokens.join('<br />');
-        } else {
-        	word = tokens.join('<wbr />');
-        }
-
-      }
-      ret.push(word);
-    });
-  return ret.join(" ");
+		msg.split(" "),
+		function(word) {
+			if (word.length > length) {
+				var tokens = [];
+				while (word.length >= length) {
+					tokens.push(word.slice(0, length));
+					word = word.slice(length);
+				}
+				if (word) {
+					tokens.push(word);
+				}
+				
+				if ( forceBreak === true ) {
+                    word = tokens.join('<br />');
+				} else {
+                    word = tokens.join('<wbr />');
+				}
+				
+			}
+			ret.push(word);
+		});
+	return ret.join(" ");
 };
 
 xmpptk.ui.fixID = function(str) {
@@ -53,7 +83,7 @@ xmpptk.ui.hrTime = function(ts) {
     // converts timestamp ts to human readable time string
     var str = '';
 
-    var m2 = function(num) { return (num<10)?"0"+num:num; }
+    var m2 = function(num) { return (num<10)?"0"+num:num; };
 
     var now = new Date();
     var ystrdy = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -90,21 +120,15 @@ xmpptk.ui.msgFormat = function(msg) {
     }
 
     msg = xmpptk.ui.htmlEnc(msg);
-
-    msg = xmpptk.ui.cropLongWords(msg, xmpptk.ui.MAX_WORD_LENGTH);
-
-    // TODO
-
-    // make sure xmpptk.emoticons is initialized already, could be
-    // done by using a singleton
+//    msg = xmpptk.ui.cropLongWords(msg, xmpptk.ui.MAX_WORD_LENGTH);
 
     goog.object.forEach(
-        xmpptk.ui.emoticons,
-        function(key, item) {
+        xmpptk.ui.emoticons.sortedReplacements,
+        function(item, key) {
             if (typeof item.icon.width != 'undefined' && item.icon.width && item.icon.width > 0 && item.icon.height > 0) {
-	        msg = msg.replace(item.regexp,"$1<img src=\""+item.icon.src+"\" width='"+item.icon.width+"' height='"+item.icon.height+"' alt=\""+key+"\" title=\""+key+"\">$2");
+                msg = msg.replace(item.regexp,"$1<img src=\""+item.icon.src+"\" width='"+item.icon.width+"' height='"+item.icon.height+"' alt=\""+key+"\" title=\""+key+"\">$2");
             } else {
-	        msg = msg.replace(item.regexp,"$1<img src=\""+item.icon.src+"\" alt=\""+key+"\" title=\""+key+"\">$2");
+                msg = msg.replace(item.regexp,"$1<img src=\""+item.icon.src+"\" alt=\""+key+"\" title=\""+key+"\">$2");
             }
         }
     );
