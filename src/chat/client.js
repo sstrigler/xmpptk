@@ -30,7 +30,7 @@ chat.Client.prototype._logger = goog.debug.Logger.getLogger('chat.Client');
  * @inheritDoc
  */
 chat.Client.prototype.login = function(cfg, callback) {
-    if (!cfg || cfg['username'] === '' || cfg['pass'] === '')
+    if (!cfg || cfg['username'] === '' || cfg['password'] === '')
         return alert('Please supply username and password in order to login');
     
     if (cfg['username'].indexOf('@') != -1) {
