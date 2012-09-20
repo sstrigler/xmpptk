@@ -26,4 +26,4 @@ clean:
 
 deps:
 	@echo "building dependencies";
-	@./lib/closure-library/closure/bin/build/depswriter.py --root_with_prefix="$(SOURCEDIR) ../../../../src/" > $(DEPSFILE)
+	@./lib/closure-library/closure/bin/build/depswriter.py --root_with_prefix="$(SOURCEDIR) ../src/" > $(DEPSFILE)
