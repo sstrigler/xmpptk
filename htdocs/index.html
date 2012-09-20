@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<link  href="chat.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="jsjac.js"></script>
+<script type="text/javascript" src="../lib/closure-library/closure/goog/base.js"></script>
+<script type="text/javascript" src="deps.js"></script>
+
+<body >
+<div id="chat"></div>
+<script>
+var Chat_Config={
+    debug: true,
+    log_level: 'INFO',
+    httpbase: '/http-bind/',
+    domain: 'jwchat.org',
+    DOMchatElement: 'chat',
+    emoticons_path: 'emoticons/'
+};
+
+goog.require('chat');
+window.onload = function() {
+    chat.load(
+        Chat_Config,
+        {username: 'zeank2',
+         password: 'hkm18g'});
+};
+</script>
+</body>
+</html>
