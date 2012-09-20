@@ -22,8 +22,11 @@ chat.ui.Client = function(subject) {
     subject.subscribe('login', function(error) {
         var username = goog.dom.createDom('input', {type: 'text', id: 'username'});
         var password = goog.dom.createDom('input', {type: 'password', id: 'password'});
+
+        var reason = error.reason || '';
         var form = goog.dom.createDom(
             'form', {name: 'loginForm', 'class': 'loginForm'},
+            goog.dom.createDom('div', {'class': 'error', id: 'loginForm_error'}, reason),
             goog.dom.createDom('div', {},
                                goog.dom.createDom('label', {'for':'username'},
                                                   'Username (JID)', ': ')),
@@ -35,14 +38,31 @@ chat.ui.Client = function(subject) {
             goog.dom.createDom('div', {},
                                password));
 
+        var setError = function(field, message) {
+            goog.dom.$(field).focus();
+            goog.dom.setTextContent(goog.dom.$('loginForm_error'), message);
+            return false;
+        };
+
         var dialog = new goog.ui.Dialog();
         dialog.setTitle('Login');
         dialog.setContent(goog.dom.getOuterHtml(form));
         dialog.setButtonSet(goog.ui.Dialog.ButtonSet.createOk());
+        dialog.setHasTitleCloseButton(false);
 
         goog.events.listen(dialog, goog.ui.Dialog.EventType.SELECT, function(e) {
-            this._logger.info(goog.dom.$F(goog.dom.$('username')));
-            return false;
+            var username = goog.dom.$F(goog.dom.$('username'));
+            var password = goog.dom.$F(goog.dom.$('password'));
+
+            if (!username || username === '')
+                return setError('username', 'Please provide a username!');
+            if (!password || password === '')
+                return setError('password', 'Please provide a password!');
+
+            xmpptk.setConfig({'username': username,
+                              'password': password});
+            subject.login(error.callback, error.context);
+            return true;
         }, false, this);
 
         dialog.setVisible(true);
@@ -126,6 +146,6 @@ chat.ui.Client.prototype.render = function(parent) {
             this._lastTabSelected = tabSelected;
         }, this)
     );
-    
+
     parent.scrollIntoView();
 };

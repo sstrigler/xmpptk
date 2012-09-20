@@ -28,7 +28,8 @@ chat.Client.prototype._logger = goog.debug.Logger.getLogger('chat.Client');
 
 chat.Client.prototype.login = function(callback, context) {
     if (!xmpptk.getConfig('username') || !xmpptk.getConfig('password')) {
-        this.publish('login', 'missing-credentials');
+        this.publish('login', {'callback': callback,
+                               'context': context});
         return;
     }
     
