@@ -10,7 +10,7 @@ goog.require('chat.ui.ChatSession');
  * @constructor
  * @extends {xmpptk.Client}
  */
-chat.Client = function(cfg) {
+chat.Client = function() {
     xmpptk.Client.call(this); // call superclass
     new chat.ui.Client(this);
 
@@ -26,20 +26,17 @@ goog.addSingletonGetter(chat.Client);
 */
 chat.Client.prototype._logger = goog.debug.Logger.getLogger('chat.Client');
 
-/**
- * @inheritDoc
- */
-chat.Client.prototype.login = function(cfg, callback) {
-    if (!cfg || cfg['username'] === '' || cfg['password'] === '')
-        return alert('Please supply username and password in order to login');
-    
-    if (cfg['username'].indexOf('@') != -1) {
-        var tmp = cfg['username'].split('@');
-        cfg['username'] = tmp[0];
-        cfg['domain'] = tmp[1];
+chat.Client.prototype.login = function(callback, context) {
+    if (!xmpptk.getConfig('username') || !xmpptk.getConfig('password')) {
+        this.publish('login', 'missing-credentials');
+        return;
     }
-
-    goog.object.extend(xmpptk.Config, cfg);
+    
+    if (xmpptk.getConfig('username').indexOf('@') !== -1) {
+        var split = xmpptk.getConfig('username').split('@');
+        xmpptk.setConfig({'username':  split[0],
+                          'domain': split[1]});
+    }
 
     goog.base(this, 'login', function() {
         this.publish('loggedIn');
@@ -49,7 +46,7 @@ chat.Client.prototype.login = function(cfg, callback) {
         }, this);
 
         if (typeof callback == 'function')
-            callback();
+            xmpptk.call(callback, context);
     }, this);
 };
 

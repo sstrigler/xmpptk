@@ -18,3 +18,13 @@ xmpptk.getConfig = function(key, opt_default) {
         return opt_default;
     }
 };
+
+/**
+ * set a config value
+ * @param {string|object} key either the name of the key to be set or an object of keys and values
+ * @param {string} value the value for the key to be set
+ */
+xmpptk.setConfig = function(key, value) {
+    if (typeof key == 'object') goog.object.forEach(key, function(v,k) {xmpptk.setConfig(k,v); });
+    else xmpptk.Config[key] = value;
+};

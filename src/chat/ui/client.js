@@ -1,5 +1,6 @@
 goog.provide('chat.ui.Client');
 
+goog.require('goog.ui.Dialog');
 goog.require('goog.ui.TabBar');
 goog.require('goog.ui.Tab');
 goog.require('goog.ui.RoundedTabRenderer');
@@ -16,6 +17,23 @@ goog.require('chat.ui.Roster');
  */
 chat.ui.Client = function(subject) {
     xmpptk.ui.View.call(this, subject);
+
+    subject.subscribe('login', function(error) {
+        var form = goog.dom.createDom(
+            'form', {},
+            goog.dom.createDom('div', {},
+                               'Username (JID)', ': ',
+                               goog.dom.createDom('input', {type: 'text', name: 'username'})),
+            goog.dom.createDom('div', {},
+                               'Password', ': ',
+                               goog.dom.createDom('input', {type: 'password', name: 'password'})));
+
+        var dialog = new goog.ui.Dialog();
+        dialog.setTitle('Login');
+        dialog.setContent(goog.dom.getOuterHtml(form));
+        dialog.setButtonSet(goog.ui.Dialog.ButtonSet.createOk());
+        dialog.setVisible(true);
+    });
 
     subject.subscribe('loggedIn', function() {
         xmpptk.ui.emoticons.init(xmpptk.getConfig('emoticons_path'));

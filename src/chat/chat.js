@@ -17,8 +17,8 @@ goog.require('chat.Client');
  * @param {xmpptk.Config} cfg a configuration 
  * @param {object} opt_cfg another configuration 
  */
-chat.load = function(cfg, opt_cfg) {
-    goog.object.extend(xmpptk.Config, cfg);
+chat.load = function(cfg) {
+    xmpptk.setConfig(cfg);
 
     if (xmpptk.getConfig('debug')) {
         goog.debug.LogManager.getRoot().setLevel(
@@ -30,7 +30,7 @@ chat.load = function(cfg, opt_cfg) {
     }
 
     var client = chat.Client.getInstance();
-    client.login(opt_cfg, function() {
+    client.login(function() {
         goog.events.listen(
             window,
             goog.events.EventType.UNLOAD,
