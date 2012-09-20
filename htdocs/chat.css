@@ -426,3 +426,16 @@ div#roster {
     vertical-align: top;
     padding-right: 4px;
 }
+
+.loginForm {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.loginForm div {
+    padding: 4px;
+}
+
+.loginForm input {
+    width: 100%;    
+}

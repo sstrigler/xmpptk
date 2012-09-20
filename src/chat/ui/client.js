@@ -1,5 +1,6 @@
 goog.provide('chat.ui.Client');
 
+goog.require('goog.dom.forms');
 goog.require('goog.ui.Dialog');
 goog.require('goog.ui.TabBar');
 goog.require('goog.ui.Tab');
@@ -19,21 +20,34 @@ chat.ui.Client = function(subject) {
     xmpptk.ui.View.call(this, subject);
 
     subject.subscribe('login', function(error) {
+        var username = goog.dom.createDom('input', {type: 'text', id: 'username'});
+        var password = goog.dom.createDom('input', {type: 'password', id: 'password'});
         var form = goog.dom.createDom(
-            'form', {},
+            'form', {name: 'loginForm', 'class': 'loginForm'},
             goog.dom.createDom('div', {},
-                               'Username (JID)', ': ',
-                               goog.dom.createDom('input', {type: 'text', name: 'username'})),
+                               goog.dom.createDom('label', {'for':'username'},
+                                                  'Username (JID)', ': ')),
             goog.dom.createDom('div', {},
-                               'Password', ': ',
-                               goog.dom.createDom('input', {type: 'password', name: 'password'})));
+                               username),
+            goog.dom.createDom('div', {},
+                               goog.dom.createDom('label', {'for': 'password'},
+                                                  'Password', ': ')),
+            goog.dom.createDom('div', {},
+                               password));
 
         var dialog = new goog.ui.Dialog();
         dialog.setTitle('Login');
         dialog.setContent(goog.dom.getOuterHtml(form));
         dialog.setButtonSet(goog.ui.Dialog.ButtonSet.createOk());
+
+        goog.events.listen(dialog, goog.ui.Dialog.EventType.SELECT, function(e) {
+            this._logger.info(goog.dom.$F(goog.dom.$('username')));
+            return false;
+        }, false, this);
+
         dialog.setVisible(true);
-    });
+        goog.dom.$('username').focus();
+    }, this);
 
     subject.subscribe('loggedIn', function() {
         xmpptk.ui.emoticons.init(xmpptk.getConfig('emoticons_path'));
