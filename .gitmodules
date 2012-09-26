@@ -1,6 +1,6 @@
 [submodule "lib/jsjac"]
 	path = lib/jsjac
-	url = git@github.com:sstrigler/JSJaC.git
+	url = https://github.com/sstrigler/JSJaC.git
 [submodule "lib/closure-library"]
 	path = lib/closure-library
 	url = https://github.com/jarib/google-closure-library.git
