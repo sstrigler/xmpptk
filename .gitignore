@@ -1,6 +1,3 @@
-.#*
-xmpptk.js
-deps.js
-htdocs/.htaccess
-htdocs/helpim.js
+htdocs/chat.js
+htdocs/deps.js
 htdocs/jsjac.js
