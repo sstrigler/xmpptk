@@ -115,7 +115,7 @@ xmpptk.RosterItem.prototype.getPresence = function() {
 
 /**
  * internal method to really determine the most significant presence
- * information of thie entits 
+ * information of thie entits
  *
  * @return {{show: xmpptk.RosterItem.PresenceShow, status=: string, priority=: number}}
  */
@@ -123,9 +123,9 @@ xmpptk.RosterItem.prototype._getPresence = function() {
     // determine presences with highest priority
     return goog.array.reduce(
         goog.object.getValues(this.resources),
-        function(prev, cur) { 
-            if (!prev || cur.priority > prev.priority) 
-                return cur; 
+        function(prev, cur) {
+            if (!prev || cur.priority > prev.priority)
+                return cur;
             else if (cur.priority == prev.priority) {
                 if (cur.show == prev.show) {
                     return prev; // doesn't matter

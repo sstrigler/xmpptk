@@ -23,7 +23,7 @@ goog.addSingletonGetter(chat.Client);
 /**
  * @type {goog.debug.Logger}
  * @protected
-*/
+ */
 chat.Client.prototype._logger = goog.debug.Logger.getLogger('chat.Client');
 
 chat.Client.prototype.login = function(callback, context) {
@@ -32,7 +32,7 @@ chat.Client.prototype.login = function(callback, context) {
                                'context': context});
         return;
     }
-    
+
     if (xmpptk.getConfig('username').indexOf('@') !== -1) {
         var split = xmpptk.getConfig('username').split('@');
         xmpptk.setConfig({'username':  split[0],

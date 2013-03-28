@@ -14,8 +14,8 @@ goog.require('xmpptk.Config');
 goog.require('chat.Client');
 
 /**
- * @param {xmpptk.Config} cfg a configuration 
- * @param {object} opt_cfg another configuration 
+ * @param {xmpptk.Config} cfg a configuration
+ * @param {object} opt_cfg another configuration
  */
 chat.load = function(cfg) {
     xmpptk.setConfig(cfg);
@@ -34,7 +34,7 @@ chat.load = function(cfg) {
         goog.events.listen(
             window,
             goog.events.EventType.UNLOAD,
-            function() {client.logout(); });
+            client.logout);
     });
 };
 goog.exportSymbol('chat.load', chat.load);

@@ -11,7 +11,7 @@ goog.require('xmpptk.ui.View');
 /**
  * @constructor
  * @extends {xmpptk.ui.View}
-*/
+ */
 chat.ui.ChatSession = function(subject, tab) {
     xmpptk.ui.View.call(this, subject);
 
@@ -33,7 +33,7 @@ chat.ui.ChatSession.prototype._handleChatMessage = function(message) {
     if (!this._tab.isSelected()) {
         this._tab.setHighlighted(true);
     }
-    if (!this._tab.getParent().getSelectedTab()) 
+    if (!this._tab.getParent().getSelectedTab())
         this._tab.getParent().setSelectedTab(this._tab);
 };
 
@@ -110,7 +110,7 @@ chat.ui.ChatSession.prototype.render = function(parent) {
         goog.dom.createDom('div', {'class': 'messagesPanel'}),
         goog.dom.createDom('div', {'class': 'plugins'},
                            goog.dom.createDom('button', {'class': 'emoticonsButton'})),
-        goog.dom.createDom('div', {'class': 'sendDiv'}, 
+        goog.dom.createDom('div', {'class': 'sendDiv'},
                            goog.dom.createDom('input', {'type': 'button', 'title': 'Click here to send message', 'class': 'sendButton', 'value': 'Send'}),
                            goog.dom.createDom('div', {'class': 'sendPanel'},
                                               goog.dom.createDom('textarea', {'class': 'sendTextarea'})
@@ -229,7 +229,7 @@ chat.ui.ChatSession.prototype.render = function(parent) {
         }, this);
 
     var emoticonsBubble = new goog.ui.Bubble(emoticonsPanel);
-//    emoticonsBubble.setAutoHide(false);
+    //    emoticonsBubble.setAutoHide(false);
     emoticonsBubble.setPosition(new goog.positioning.AnchoredPosition(emoticonsButton, null));
     emoticonsBubble.render();
     emoticonsBubble.attach(emoticonsButton);
@@ -248,7 +248,6 @@ chat.ui.ChatSession.prototype.render = function(parent) {
 
     var sendButton = new goog.ui.Button();
     sendButton.decorate(goog.dom.getElementByClass('sendButton', this._panel));
-    
 };
 
 chat.ui.ChatSession.prototype.send = function() {

@@ -27,10 +27,10 @@ xmpptk.ui.MAX_WORD_LENGTH = 28;
  */
 xmpptk.ui.cut = function(str, len) {
     if (!str) {
-      return '';
+        return '';
     }
     if (str.length > len) {
-      return str.substring(0, len-3)+"...";
+        return str.substring(0, len-3)+"...";
     }
     return str;
 };
@@ -43,31 +43,31 @@ xmpptk.ui.cut = function(str, len) {
  * @param {int} length the maximum length allowed for a word
  * @param {boolean} forceBreak wether to use <br> or <wbr> for splitting up words
  */
- xmpptk.ui.cropLongWords = function(msg, length, forceBreak) {
+xmpptk.ui.cropLongWords = function(msg, length, forceBreak) {
     var ret = [];
     goog.array.forEach(
-		msg.split(" "),
-		function(word) {
-			if (word.length > length) {
-				var tokens = [];
-				while (word.length >= length) {
-					tokens.push(word.slice(0, length));
-					word = word.slice(length);
-				}
-				if (word) {
-					tokens.push(word);
-				}
-				
-				if ( forceBreak === true ) {
+        msg.split(" "),
+        function(word) {
+            if (word.length > length) {
+                var tokens = [];
+                while (word.length >= length) {
+                    tokens.push(word.slice(0, length));
+                    word = word.slice(length);
+                }
+                if (word) {
+                    tokens.push(word);
+                }
+
+                if ( forceBreak === true ) {
                     word = tokens.join('<br />');
-				} else {
+                } else {
                     word = tokens.join('<wbr />');
-				}
-				
-			}
-			ret.push(word);
-		});
-	return ret.join(" ");
+                }
+
+            }
+            ret.push(word);
+        });
+    return ret.join(" ");
 };
 
 xmpptk.ui.fixID = function(str) {
@@ -120,7 +120,7 @@ xmpptk.ui.msgFormat = function(msg) {
     }
 
     msg = xmpptk.ui.htmlEnc(msg);
-//    msg = xmpptk.ui.cropLongWords(msg, xmpptk.ui.MAX_WORD_LENGTH);
+    //    msg = xmpptk.ui.cropLongWords(msg, xmpptk.ui.MAX_WORD_LENGTH);
 
     goog.object.forEach(
         xmpptk.ui.emoticons.sortedReplacements,

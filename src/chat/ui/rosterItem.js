@@ -24,7 +24,7 @@ goog.inherits(chat.ui.RosterItem, xmpptk.ui.View);
 /**
  * @type {goog.debug.Logger}
  * @protected
-*/
+ */
 chat.ui.RosterItem.prototype._logger = goog.debug.Logger.getLogger('chat.ui.RosterItem');
 
 chat.ui.RosterItem.prototype.update = function() {
@@ -55,15 +55,15 @@ chat.ui.RosterItem.prototype.render = function() {
     } else {
         this._el = goog.dom.createDom('li',
                                       {'class': 'rosterItem_presence_'+this.subject.getPresenceShow()},
-                                      goog.dom.createDom('img', 
+                                      goog.dom.createDom('img',
                                                          {src: "data:"+avatar.TYPE+";base64,"+avatar.BINVAL,
                                                           'class': 'rosterItem_avatar'}),
                                       goog.dom.createDom('span', {'class': 'rosterItem_name'}, this.subject.name)
                                      );
-        
+
         goog.events.listen(this._el,
                            goog.events.EventType.DBLCLICK,
-                           function(e) { 
+                           function(e) {
                                this._logger.info(this.subject.getId() + ' dblclicked');
                                chat.Client.getInstance().publish('openChat', this.subject);
                                e.stopPropagation();
@@ -73,7 +73,7 @@ chat.ui.RosterItem.prototype.render = function() {
                           );
         goog.events.listen(this._el,
                            goog.events.EventType.CLICK,
-                           function(e) { 
+                           function(e) {
                                this._logger.info(this.subject.getId() + ' clicked');
                                chat.Client.getInstance().publish('selectRosterItem', this);
                                e.stopPropagation();

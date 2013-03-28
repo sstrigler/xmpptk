@@ -60,7 +60,7 @@ xmpptk.muc.Room = function(client, room_jid, password) {
     /**
      * indicates whether we've been admitted to room or not
      * @type {boolean}
-	 * @private
+     * @private
      */
     this._admitted = false;
 };
@@ -122,9 +122,9 @@ xmpptk.muc.Room.prototype.part = function() {
 };
 
 /**
-  * send a message to the room (and thus to all occupants)
-  * @param {string} msg the message to send
-  */
+ * send a message to the room (and thus to all occupants)
+ * @param {string} msg the message to send
+ */
 xmpptk.muc.Room.prototype.sendMessage = function(msg) {
     this._client.sendGroupchatMessage(this.id, msg);
 };
@@ -181,7 +181,7 @@ xmpptk.muc.Room.prototype._handleGroupchatMessage = function(oMsg) {
     } else {
         var chatState = oMsg.getChatState();
         if (chatState != '') {
-			this._logger.info("got a chatState from "+from+": "+chatState);
+            this._logger.info("got a chatState from "+from+": "+chatState);
             this.chatStates[from] = chatState;
             this.set('chatStates', this.chatStates);
         }
@@ -191,15 +191,15 @@ xmpptk.muc.Room.prototype._handleGroupchatMessage = function(oMsg) {
         }
         this.chatStates[from] = '';
         this.set('chatStates', this.chatStates);
-		var msg = {from: from,
-				   body: oMsg.getBody(),
-				   type: oMsg.getType()
+        var msg = {from: from,
+                   body: oMsg.getBody(),
+                   type: oMsg.getType()
                   };
         var delay = oMsg.getChild('delay', 'urn:xmpp:delay');
         if (delay) {
             msg.delay = delay.getAttribute('stamp');
         }
-		this.publish('message', msg);
+        this.publish('message', msg);
         this.messages.push(msg);
         this.set('messages', this.messages);
     }
@@ -216,16 +216,16 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
 
     var from = oPres.getFrom();
 
-	var event = {from: oPres.getFromJID().getResource(),
+    var event = {from: oPres.getFromJID().getResource(),
                  status: oPres.getStatus()};
 
-	if (oPres.isError()) {
-		var error = oPres.getChild('error');
-		if (error.getAttribute('type') == 'cancel' &&
-			error.firstChild.tagName == 'conflict') {
-			this.publish('nick_conflict');
-		}
-	} else if (oPres.getType() == 'unavailable') {
+    if (oPres.isError()) {
+        var error = oPres.getChild('error');
+        if (error.getAttribute('type') == 'cancel' &&
+            error.firstChild.tagName == 'conflict') {
+            this.publish('nick_conflict');
+        }
+    } else if (oPres.getType() == 'unavailable') {
         var status = oPres.getChild('status', xmpptk.muc.NS.USER);
         if (status && status.getAttribute('code') == '307') {
             event.kicked = true;
@@ -233,13 +233,13 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
             if (actor)
                 event.actor = actor.getAttribute('nick');
             var reason = oPres.getChild('reason', xmpptk.muc.NS.USER);
-            if (reason && reason.firstChild) 
+            if (reason && reason.firstChild)
                 event.reason = reason.firstChild.nodeValue;
         }
         if (this.roster.hasItem(from)) {
             this.roster.removeItem(from);
         }
-		this.publish('occupant_left', event);
+        this.publish('occupant_left', event);
         this.events.push(goog.object.extend(event, {'type': 'occupant_left'}));
         this.set('events', this.events);
     } else {
@@ -250,13 +250,13 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
             var item = x.getElementsByTagName('item').item(0);
 
             if (item) {
-				var role = item.getAttribute('role');
+                var role = item.getAttribute('role');
 
                 if (from == this.jid) {
                     // it's my own presence, check if we're part of the game now
                     if (!this._admitted && !goog.array.contains(['none', 'outcast'], role)) {
                         this._admitted = true;
-						this.publish('admitted');
+                        this.publish('admitted');
                     }
                 }
 
@@ -266,8 +266,8 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
                     'real_jid':    item.getAttribute('jid')
                 });
 
-				this.publish('occupant_joined', event)
-				this.events.push(goog.object.extend(event, {'type': 'occupant_joined'}));
+                this.publish('occupant_joined', event)
+                this.events.push(goog.object.extend(event, {'type': 'occupant_joined'}));
                 this.set('events', this.events);
 
             }

@@ -22,4 +22,3 @@ xmpptk.Observer.prototype.update = function() {
     // must be overwritten
     throw "update called on observer but wasn't handled";
 };
-

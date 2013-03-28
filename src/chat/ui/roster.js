@@ -43,7 +43,7 @@ chat.ui.Roster = function(subject) {
     this._rosterItemViews = [];
     this._rosterItemSelected = null;
 
-    goog.dom.appendChild(rosterEl, this._roster); 
+    goog.dom.appendChild(rosterEl, this._roster);
     this.render();
 };
 goog.inherits(chat.ui.Roster, xmpptk.ui.View);
@@ -51,7 +51,7 @@ goog.inherits(chat.ui.Roster, xmpptk.ui.View);
 /**
  * @type {goog.debug.Logger}
  * @protected
-*/
+ */
 chat.ui.Roster.prototype._logger = goog.debug.Logger.getLogger('chat.ui.Roster');
 
 chat.ui.Roster.prototype.handleAction = function(action) {

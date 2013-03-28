@@ -13,7 +13,7 @@ chat.ui.vCard._toHtml = function(vCard, parent, path) {
     goog.object.forEach(
         vCard,
         function(val, key) {
-            if (key.indexOf('@') === 0) 
+            if (key.indexOf('@') === 0)
                 return;
             if (key == 'PHOTO')
                 return;
