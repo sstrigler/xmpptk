@@ -1,2 +1,0 @@
-goog.provide('muc');
-
