@@ -7,7 +7,7 @@ goog.require('xmpptk.Collection');
  * @extends {xmpptk.Collection}
  */
 xmpptk.Roster = function(client) {
-    xmpptk.Collection.call(this, xmpptk.RosterItem, 'jid');
+    xmpptk.Collection.call(this, xmpptk.RosterItem);
     client.subscribe('presence', function(presence) {
         this._logger.info("got presence from "+presence['from'].toString());
 

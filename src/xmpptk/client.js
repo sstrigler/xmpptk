@@ -22,6 +22,11 @@ xmpptk.Client = function() {
 
     /** @type {xmpptk.Roster} */
     this.roster = new xmpptk.Roster(this);
+
+    this.jid = new JSJaCJID(
+        xmpptk.getConfig('username') + '@' +
+            xmpptk.getConfig('domain') + '/' +
+            xmpptk.getConfig('resource'));
 };
 goog.inherits(xmpptk.Client, xmpptk.Model);
 goog.addSingletonGetter(xmpptk.Client);
@@ -280,7 +285,10 @@ xmpptk.Client.prototype._handleMessage = function(m) {
 };
 
 xmpptk.Client.prototype._handlePresence = function(p) {
-    if (p.getFromJID().isEntity(new JSJaCJID(this._con['jid']))) {
+    this._logger.info("handling presence: "+p.xml());
+
+    if (p.getFromJID().isEntity(this.jid)) {
+        this._logger.info("got presence from ourselves, discarding");
         // a presence from ourselves
         return;
     }
@@ -316,7 +324,7 @@ xmpptk.Client.prototype._handlePresence = function(p) {
                 'priority' : p.getPriority() || 0
             }
         }
-    ); 
+    );
 };
 
 xmpptk.Client.prototype._handleRosterPush = function(resIQ) {

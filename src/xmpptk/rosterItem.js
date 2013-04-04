@@ -30,6 +30,8 @@ xmpptk.RosterItem = function(item) {
 };
 goog.inherits(xmpptk.RosterItem, xmpptk.Model);
 
+xmpptk.RosterItem.id = 'jid';
+
 /** @enum {string} */
 xmpptk.RosterItem.Subscription = {
     BOTH: 'both',
@@ -70,6 +72,8 @@ xmpptk.RosterItem.prototype.getVCard = function() {
         this._logger.info('got vCard from localStorage');
         this.set('vCard', goog.json.parse(vCard));
     } else {
+        if (!this.client || typeof this.client.getVCard !== 'function')
+            return;
         this._logger.info("retrieving vCard");
         this.client.getVCard(this.getId(), function(vCard) {
             if (!vCard)
