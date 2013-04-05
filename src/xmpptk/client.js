@@ -136,7 +136,7 @@ xmpptk.Client.prototype.getVCard = function(jid, callback, context) {
  * @return {boolean} 'true' if client is connected, 'false' otherwise.
  */
 xmpptk.Client.prototype.isConnected = function() {
-    return this._con.connected();
+    return typeof this._con !== 'undefined' && this._con.connected();
 };
 
 /**
