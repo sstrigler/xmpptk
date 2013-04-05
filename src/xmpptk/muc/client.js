@@ -27,8 +27,11 @@ xmpptk.muc.Client.prototype.login = function(callback, context) {
     goog.base(this, 'login', callback, context);
 
     // register handlers
-    this._con.registerHandler('message', goog.bind(this._handleGroupchatPacket, this));
-    this._con.registerHandler('presence', goog.bind(this._handleGroupchatPacket, this));
+    this._con.registerHandler('message',
+                              goog.bind(this._handleGroupchatPacket, this));
+    this._con.registerHandler('presence', 'x',
+                              xmpptk.muc.NS.USER,
+                              goog.bind(this._handleGroupchatPacket, this));
 };
 
 /**
@@ -75,7 +78,8 @@ xmpptk.muc.Client.prototype._handleGroupchatPacket = function(oJSJaCPacket) {
         try {
             this.rooms[room_id].handleGroupchatPacket(oJSJaCPacket);
         } catch(e) {
-            this._logger.severe("failed to call room's handleGroupchatPacket:"+e.message, e);
+            this._logger.severe("failed to call room's handleGroupchatPacket:"+
+                                e.message, e);
         }
         return true;
     } else {
