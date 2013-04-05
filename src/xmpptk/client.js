@@ -29,7 +29,7 @@ xmpptk.Client = function() {
             xmpptk.getConfig('domain') + '/' +
             xmpptk.getConfig('resource'));
 
-
+    this.connected = false;
 };
 goog.inherits(xmpptk.Client, xmpptk.Model);
 goog.addSingletonGetter(xmpptk.Client);
@@ -341,6 +341,7 @@ xmpptk.Client.prototype.suspend = function() {
 /* ---------------------- INTERNAL ---------------------- */
 
 xmpptk.Client.prototype._handleConnected = function() {
+    this.set('connected', true);
     this.publish('connected');
     this.publish('_login');
 };
