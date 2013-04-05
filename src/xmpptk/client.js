@@ -30,6 +30,12 @@ xmpptk.Client = function() {
             xmpptk.getConfig('resource'));
 
     this.connected = false;
+
+    this.presence = {
+        'show': 'unavailable',
+        'status' : '',
+        'priority': -1
+    };
 };
 goog.inherits(xmpptk.Client, xmpptk.Model);
 goog.addSingletonGetter(xmpptk.Client);
@@ -45,7 +51,7 @@ xmpptk.Client.NS = {
 /**
  * @type {goog.debug.Logger}
  * @protected
-*/
+ */
 xmpptk.Client.prototype._logger = goog.debug.Logger.getLogger('xmpptk.Client');
 
 /**
@@ -160,7 +166,7 @@ xmpptk.Client.prototype.login = function(callback, context) {
     this._con.registerHandler('ondisconnect',
                               JSJaC.bind(function() {
                                   this.publish('disconnected',
-                                                  this._con.status() == 'session-terminate-conflict');
+                                               this._con.status() == 'session-terminate-conflict');
                               },this));
 
     this._con.registerHandler('onerror',
@@ -379,11 +385,6 @@ xmpptk.Client.prototype._handleMessage = function(m) {
 xmpptk.Client.prototype._handlePresence = function(p) {
     this._logger.info("handling presence: "+p.xml());
 
-    if (p.getFromJID().isEntity(this.jid)) {
-        this._logger.info("got presence from ourselves, discarding");
-        // a presence from ourselves
-        return;
-    }
     if (p.getType() && p.getType().match(/subscribe/)) {
         // it's got to do sth with subscriptions
         return this.publish(
@@ -405,16 +406,30 @@ xmpptk.Client.prototype._handlePresence = function(p) {
         }
     }
 
+    var presence =
+        {
+            'show'     : show,
+            'status'   : p.getStatus(),
+            'priority' : p.getPriority() || 0
+        };
+
+    if (p.getFromJID().isEntity(this.jid)) {
+        this._logger.info("got presence from ourselves");
+        // a presence from ourselves
+        if (p.getFromJID().getResource() == this.jid.getResource()) {
+            // full jids match
+            this.set('presence', presence);
+        } else {
+            this._logger.info("discarding own presence from other resource");
+        }
+        return;
+    }
+
     this.publish(
         'presence',
         {
             'from': p.getFromJID(),
-            'presence' :
-            {
-                'show'     : show,
-                'status'   : p.getStatus(),
-                'priority' : p.getPriority() || 0
-            }
+            'presence' : presence
         }
     );
 };
