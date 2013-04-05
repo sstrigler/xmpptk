@@ -99,14 +99,15 @@ xmpptk.muc.Room.prototype.join = function(callback) {
     }
 
     // send presence to rooms jid
-    if (this.password != '') {
-        var extra = goog.bind(function(p) {
+    var extra;
+    if (this.password !== '') {
+        extra = goog.bind(function(p) {
             return p.appendNode('x', {'xmlns': xmpptk.muc.NS.BASE},
                                 [p.buildNode('password', {'xmlns': xmpptk.muc.NS.BASE}, this.password)]);
         }, this);
     }
 
-    this._client.sendPresence('available', undefined, this.jid, extra);
+    this._client.sendPresence('available', null, this.jid, extra);
     return this;
 };
 
@@ -161,7 +162,7 @@ xmpptk.muc.Room.prototype.setSubject = function(subject) {
     m.setType('groupchat');
     m.setSubject(subject);
     this._client.send(m);
-}
+};
 
 /**
  * handles a message packet directed to this room
@@ -175,17 +176,17 @@ xmpptk.muc.Room.prototype._handleGroupchatMessage = function(oMsg) {
     var roomSubject = oMsg.getSubject();
     var from = oMsg.getFromJID().getResource();
 
-    if (roomSubject != '') {
+    if (roomSubject !== '') {
         this._logger.info("got subject: "+roomSubject);
         this.set('subject', roomSubject);
     } else {
         var chatState = oMsg.getChatState();
-        if (chatState != '') {
+        if (chatState !== '') {
             this._logger.info("got a chatState from "+from+": "+chatState);
             this.chatStates[from] = chatState;
             this.set('chatStates', this.chatStates);
         }
-        if (oMsg.getBody() == '') {
+        if (oMsg.getBody() === '') {
             this.notify();
             return;
         }
@@ -266,7 +267,7 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
                     'real_jid':    item.getAttribute('jid')
                 });
 
-                this.publish('occupant_joined', event)
+                this.publish('occupant_joined', event);
                 this.events.push(goog.object.extend(event, {'type': 'occupant_joined'}));
                 this.set('events', this.events);
 
