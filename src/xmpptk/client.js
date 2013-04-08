@@ -9,6 +9,8 @@ goog.require('xmpptk.RosterItem');
 goog.require('goog.array');
 goog.require('goog.object');
 goog.require('goog.debug.Logger');
+goog.require('goog.storage.Storage');
+goog.require('goog.storage.mechanism.HTML5SessionStorage');
 
 goog.require('goog.json');
 
@@ -23,19 +25,75 @@ xmpptk.Client = function() {
     /** @type {xmpptk.Roster} */
     this.roster = new xmpptk.Roster(this);
 
-    /** @type {JSJaCJID} */
-    this.jid = new JSJaCJID(
-        xmpptk.getConfig('username') + '@' +
+    /** @type {string} */
+    this.jid =xmpptk.getConfig('username') + '@' +
             xmpptk.getConfig('domain') + '/' +
-            xmpptk.getConfig('resource'));
+            xmpptk.getConfig('resource');
 
+    /** @type {boolean} */
     this.connected = false;
 
+    /** @type {object} */
     this.presence = {
         'show': 'unavailable',
         'status' : '',
         'priority': -1
     };
+
+    // hidden
+    this._con = new JSJaCHttpBindingConnection(xmpptk.Config);
+
+    this._con.registerHandler('onconnect',
+                              JSJaC.bind(this._handleConnected, this));
+
+    this._con.registerHandler('ondisconnect',
+                              JSJaC.bind(function() {
+                                  this.set('connected', this._con.connected());
+
+                                  this.set('presence',{
+                                      'show': 'unavailable',
+                                      'status' : 'disconnected',
+                                      'priority': -1
+                                  });
+
+                                  this.publish('disconnected',
+                                               this._con.status() ==
+                                               'session-terminate-conflict');
+                              },this));
+
+    this._con.registerHandler('onerror',
+                              JSJaC.bind(function(e) {
+                                  var error = {
+                                      code: e.getAttribute('code'),
+                                      type: e.getAttribute('type'),
+                                      condition: e.firstChild.nodeName
+                                  };
+                                  this._logger.info("an error occured: "+
+                                                    goog.json.serialize(error));
+                                  this.publish('error', error);
+                              }, this));
+
+    this._con.registerHandler('presence',
+                              JSJaC.bind(this._handlePresence, this));
+
+    this._con.registerHandler('message',
+                              JSJaC.bind(this._handleMessage, this));
+
+    this._con.registerIQSet('query',
+                            NS_ROSTER,
+                            JSJaC.bind(this._handleRosterPush, this));
+
+    this._con.registerHandler('packet_in',
+                              JSJaC.bind(function(packet) {
+                                  this._logger.fine("[IN]: "+packet.xml());
+                              }, this));
+    this._con.registerHandler('packet_out',
+                              JSJaC.bind(function(packet) {
+                                  this._logger.fine("[OUT]: "+packet.xml());
+                              }, this));
+
+    this._storage = new goog.storage.Storage(
+        new goog.storage.mechanism.HTML5SessionStorage());
 };
 goog.inherits(xmpptk.Client, xmpptk.Model);
 goog.addSingletonGetter(xmpptk.Client);
@@ -102,12 +160,15 @@ xmpptk.Client.prototype.getState = function(callback, context) {
     iq.setType('get');
     var query = iq.setQuery(NS_PRIVATE);
 
-    query.appendChild(iq.buildNode('xmpptk', {xmlns: xmpptk.Client.NS.XMPPTK_STATE}));
+    query.appendChild(iq.buildNode('xmpptk',
+                                   {xmlns: xmpptk.Client.NS.XMPPTK_STATE}));
 
     this._con.sendIQ(iq,
                      {'result_handler':
                       function(resIQ) {
-                          var state = resIQ.getChildVal('xmpptk', xmpptk.Client.NS.XMPPTK_STATE);
+                          var state = resIQ.getChildVal(
+                              'xmpptk',
+                              xmpptk.Client.NS.XMPPTK_STATE);
                           xmpptk.call(callback, context, state);
                       }
                      });
@@ -116,7 +177,8 @@ xmpptk.Client.prototype.getState = function(callback, context) {
 /**
  * Retrieve an entity's vCard.
  * @param {string} jid the bare jid of the entity to retrive vCard for
- * @param {function(object)} callback a callback to be called with the result of the query
+ * @param {function(object)} callback a callback to be called with the result of
+ *                                    the query
  * @param {object?} context optional context to call callback with
  */
 xmpptk.Client.prototype.getVCard = function(jid, callback, context) {
@@ -158,45 +220,6 @@ xmpptk.Client.prototype.login = function(callback, context) {
 
     this.subscribeOnce('_login', callback, context);
 
-    this._con = new JSJaCHttpBindingConnection(xmpptk.Config);
-
-    this._con.registerHandler('onconnect',
-                              JSJaC.bind(this._handleConnected, this));
-
-    this._con.registerHandler('ondisconnect',
-                              JSJaC.bind(function() {
-                                  this.publish('disconnected',
-                                               this._con.status() == 'session-terminate-conflict');
-                              },this));
-
-    this._con.registerHandler('onerror',
-                              JSJaC.bind(function(e) {
-                                  var error = {code: e.getAttribute('code'),
-                                               type: e.getAttribute('type'),
-                                               condition: e.firstChild.nodeName};
-                                  this._logger.info("an error occured: "+goog.json.serialize(error));
-                                  this.publish('error', error);
-                              }, this));
-
-    this._con.registerHandler('presence',
-                              JSJaC.bind(this._handlePresence, this));
-
-    this._con.registerHandler('message',
-                              JSJaC.bind(this._handleMessage, this));
-
-    this._con.registerIQSet('query',
-                            NS_ROSTER,
-                            JSJaC.bind(this._handleRosterPush, this));
-
-    this._con.registerHandler('packet_in',
-                              JSJaC.bind(function(packet) {
-                                  this._logger.fine("[IN]: "+packet.xml());
-                              }, this));
-    this._con.registerHandler('packet_out',
-                              JSJaC.bind(function(packet) {
-                                  this._logger.fine("[OUT]: "+packet.xml());
-                              }, this));
-
     this._con.connect(xmpptk.Config);
     return this;
 };
@@ -206,6 +229,7 @@ xmpptk.Client.prototype.login = function(callback, context) {
  * @return {xmpptk.Client} A reference to ourselves.
  */
 xmpptk.Client.prototype.logout = function() {
+    this.sendPresence('unavailable');
     this._con.disconnect();
     return this;
 };
@@ -215,7 +239,11 @@ xmpptk.Client.prototype.logout = function() {
  * @return {boolean} Whether resume succeeded or not.
  */
 xmpptk.Client.prototype.resume = function() {
-    return this._con.resume();
+    if (this._con.resume()) {
+        this.set(this._storage.get('xmpptk'));
+        return true;
+    }
+    return false;
 };
 
 /**
@@ -337,10 +365,11 @@ xmpptk.Client.prototype.sendSubscription = function(jid, type, message) {
 };
 
 /**
- * Suspend underlying BOSH(!) session.
+ * Suspend client.
  * @return {boolean} Whether suspending the session succeeded.
  */
 xmpptk.Client.prototype.suspend = function() {
+    this._storage.set('xmpptk', this.get());
     return this._con.suspend();
 };
 
@@ -416,7 +445,7 @@ xmpptk.Client.prototype._handlePresence = function(p) {
     if (p.getFromJID().isEntity(this.jid)) {
         this._logger.info("got presence from ourselves");
         // a presence from ourselves
-        if (p.getFromJID().getResource() == this.jid.getResource()) {
+        if (p.getFrom() == this.jid) {
             // full jids match
             this.set('presence', presence);
         } else {

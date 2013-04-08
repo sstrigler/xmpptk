@@ -18,8 +18,10 @@ goog.inherits(xmpptk.Model, xmpptk.Subject);
 /**
  * Attach a handler to a property.
  * @param {string} property the property to attach to
- * @param {function(object, string)} handler the handler to be called when property is being updated
- * @param {?object} context context to bind handler to (the this reference within the handler)
+ * @param {function(object, string)} handler the handler to be called when
+ *                                           property is being updated
+ * @param {?object} context context to bind handler to (the this reference
+ *                          within the handler)
  */
 xmpptk.Model.prototype.attachPropertyhandler = function(property, handler, context) {
     if (!this._propertyHandlers[property]) {
@@ -43,8 +45,15 @@ xmpptk.Model.prototype.get = function(prop) {
 
         for (var i in this) {
             if (this.hasOwnProperty(i)) { // it's a member property
-                if (i.indexOf('_') !== 0) { // no hidden props
-                    obj[i] = this[i];
+                if (i.indexOf('_') !== 0 &&
+                    i.indexOf('_') != (i.length-1)) {
+                    // no hidden prop
+                    if (typeof this[i].get == 'function') {
+                        // it's a xmpptk.Model, isn't it? :^==~
+                        obj[i] = this[i].get();
+                    } else {
+                        obj[i] = this[i];
+                    }
                 }
             }
         }
@@ -61,7 +70,8 @@ xmpptk.Model.prototype.get = function(prop) {
  * Updates the value of a property
  * @param {string} prop the property to be updated
  * @param {object} value the value to assign to the property
- * @param {?boolean} skip_notify whether to not notify observers about this update
+ * @param {?boolean} skip_notify whether to not notify observers about this
+ *                               update
  */
 xmpptk.Model.prototype.set = function(prop, value, skip_notify) {
     if (!prop) {
