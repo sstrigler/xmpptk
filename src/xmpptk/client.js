@@ -235,7 +235,7 @@ xmpptk.Client.prototype.logout = function() {
 };
 
 /**
- * Resume a BOSH(!) session.
+ * Resume client.
  * @return {boolean} Whether resume succeeded or not.
  */
 xmpptk.Client.prototype.resume = function() {
