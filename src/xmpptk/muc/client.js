@@ -16,9 +16,7 @@ xmpptk.muc.Client = function() {
     this._logger = goog.debug.Logger.getLogger('xmpptk.muc.Client');
     this._logger.info("instantiated");
 
-    /** @type {Object.<xmpptk.muc.Room>} */
-    this.rooms = {};
-
+    this.rooms = new xmpptk.Collection(xmpptk.muc.Room);
 };
 goog.inherits(xmpptk.muc.Client, xmpptk.Client);
 goog.addSingletonGetter(xmpptk.muc.Client);
@@ -39,7 +37,7 @@ xmpptk.muc.Client.prototype.login = function(callback, context) {
  */
 xmpptk.muc.Client.prototype.registerRoom = function(room) {
     this._logger.info("registering room with id "+room.id);
-    this.rooms[room.id] = room;
+    this.rooms.add(room);
     this.notify();
 };
 
@@ -62,7 +60,7 @@ xmpptk.muc.Client.prototype.sendGroupchatMessage = function(jid, message) {
  */
 xmpptk.muc.Client.prototype.unregisterRoom = function(room) {
     this._logger.info("unregistering room with id "+room.id);
-    delete this.rooms[room.id];
+    this.rooms.remove(room);
     this.notify();
 };
 
@@ -73,10 +71,10 @@ xmpptk.muc.Client.prototype._handleGroupchatPacket = function(oJSJaCPacket) {
     this._logger.info("handling muc packet: "+oJSJaCPacket.xml());
 
     var room_id = oJSJaCPacket.getFromJID().removeResource().toString();
-    if (this.rooms[room_id]) {
+    if (this.rooms.hasItem(room_id)) {
         this._logger.info("handing over to room with id "+room_id);
         try {
-            this.rooms[room_id].handleGroupchatPacket(oJSJaCPacket);
+            this.rooms.getItem(room_id).handleGroupchatPacket(oJSJaCPacket);
         } catch(e) {
             this._logger.severe("failed to call room's handleGroupchatPacket:"+
                                 e.message, e);
