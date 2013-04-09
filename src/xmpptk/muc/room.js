@@ -17,7 +17,7 @@ xmpptk.muc.RoomJid;
  * @constructor
  * @extends {xmpptk.Model}
  * @param {xmpptk.muc.Client} client a muc enabled xmpp client
- * @param {xmpptk.muc.RoomJID} room_jid Config to denote the rooms identity
+ * @param {xmpptk.muc.RoomJid} room_jid Config to denote the rooms identity
  * @param {?string} password an optional password to access to room with
  */
 xmpptk.muc.Room = function(client, room_jid, password) {
@@ -84,7 +84,8 @@ xmpptk.muc.Room.prototype.handleGroupchatPacket = function(oPacket) {
 
 /**
  * actually join the room
- * @param {function(object, string)} callback function to call when actually admitted to the room
+ * @param {function(object, string)} callback function to call when actually
+ *                                            admitted to the room
  * @return {xmpptk.muc.Room} this rooms
  */
 xmpptk.muc.Room.prototype.join = function(callback) {
@@ -103,7 +104,9 @@ xmpptk.muc.Room.prototype.join = function(callback) {
     if (this.password !== '') {
         extra = goog.bind(function(p) {
             return p.appendNode('x', {'xmlns': xmpptk.muc.NS.BASE},
-                                [p.buildNode('password', {'xmlns': xmpptk.muc.NS.BASE}, this.password)]);
+                                [p.buildNode('password',
+                                             {'xmlns': xmpptk.muc.NS.BASE},
+                                             this.password)]);
         }, this);
     }
 
