@@ -20,7 +20,7 @@ xmpptk.RosterItem = function(item) {
     /** @type {string} */
     this.name = item.name || (new JSJaCJID(item['jid'])).getNode();
 
-    this.client = item.client;
+    this._client = item.client;
     this.set('presence', xmpptk.RosterItem.PRESENCEDEFAULT);
 
     /** @type {Object.<string, xmpptk.Presence>} */
@@ -76,15 +76,17 @@ xmpptk.RosterItem.prototype.getVCard = function() {
         this._logger.info('got vCard from localStorage');
         this.set('vCard', goog.json.parse(vCard));
     } else {
-        if (!this.client || typeof this.client.getVCard !== 'function')
+        if (!this._client || typeof this._client.getVCard !== 'function')
             return;
         this._logger.info("retrieving vCard");
-        this.client.getVCard(this.getId(), function(vCard) {
+        this._client.getVCard(this.getId(), function(vCard) {
             if (!vCard)
                 return;
-            this._logger.info("got avatar by vCard: "+goog.json.serialize(vCard));
+            this._logger.info("got avatar by vCard: "+
+                              goog.json.serialize(vCard));
             if (typeof 'Storage' !== 'undefined')
-                sessionStorage['vCard'+this.getId()] = goog.json.serialize(vCard);
+                sessionStorage['vCard'+this.getId()] =
+                goog.json.serialize(vCard);
             this.set('vCard', vCard);
         }, this);
     }
