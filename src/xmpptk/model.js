@@ -67,6 +67,14 @@ xmpptk.Model.prototype.get = function(prop) {
 };
 
 /**
+ * return own id
+ */
+xmpptk.Model.prototype.getId = function() {
+    return this.id;
+};
+
+
+/**
  * Updates the value of a property
  * @param {string} prop the property to be updated
  * @param {object} value the value to assign to the property
