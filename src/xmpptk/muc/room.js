@@ -148,13 +148,6 @@ xmpptk.muc.Room.prototype.sendPrivateMessage = function(nick, msg) {
 };
 
 /**
- * sends a composing event to the room (must be supported by conference service)
- */
-xmpptk.muc.Room.prototype.sendComposing = function() {
-    this._client.sendComposing(this.id);
-};
-
-/**
  * set subject of this room
  * @param {string} subject the subject to set
  */
@@ -183,18 +176,6 @@ xmpptk.muc.Room.prototype._handleGroupchatMessage = function(oMsg) {
         this._logger.info("got subject: "+roomSubject);
         this.set('subject', roomSubject);
     } else {
-        var chatState = oMsg.getChatState();
-        if (chatState !== '') {
-            this._logger.info("got a chatState from "+from+": "+chatState);
-            this.chatStates[from] = chatState;
-            this.set('chatStates', this.chatStates);
-        }
-        if (oMsg.getBody() === '') {
-            this.notify();
-            return;
-        }
-        this.chatStates[from] = '';
-        this.set('chatStates', this.chatStates);
         var msg = {from: from,
                    body: oMsg.getBody(),
                    type: oMsg.getType()
@@ -207,7 +188,6 @@ xmpptk.muc.Room.prototype._handleGroupchatMessage = function(oMsg) {
         this.messages.push(msg);
         this.set('messages', this.messages);
     }
-    this.notify();
 };
 
 /**
