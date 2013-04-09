@@ -239,7 +239,7 @@ xmpptk.Client.prototype.logout = function() {
  * @return {boolean} Whether resume succeeded or not.
  */
 xmpptk.Client.prototype.resume = function() {
-    if (this._con.resume()) {
+    if (this._con.resumeFromData(this._storage.get('jsjac'))) {
         this.set(this._storage.get('xmpptk'));
         return true;
     }
@@ -370,7 +370,8 @@ xmpptk.Client.prototype.sendSubscription = function(jid, type, message) {
  */
 xmpptk.Client.prototype.suspend = function() {
     this._storage.set('xmpptk', this.get());
-    return this._con.suspend();
+    this._storage.set('jsjac', this._con.suspendToData());
+    return true;
 };
 
 /* ---------------------- INTERNAL ---------------------- */
