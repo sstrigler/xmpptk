@@ -51,9 +51,13 @@ xmpptk.RosterItem.PresenceShow = {
 };
 
 /** @const */
-xmpptk.RosterItem.PRESENCEDEFAULT = {show: xmpptk.RosterItem.PresenceShow.UNAVAILABLE, status: '', priority: 0};
+xmpptk.RosterItem.PRESENCEDEFAULT =
+    {show: xmpptk.RosterItem.PresenceShow.UNAVAILABLE,
+     status: '',
+     priority: 0};
 
-xmpptk.RosterItem.prototype._logger = goog.debug.Logger.getLogger('xmpptk.RosterItem');
+xmpptk.RosterItem.prototype._logger =
+    goog.debug.Logger.getLogger('xmpptk.RosterItem');
 
 /**
  * return own id
