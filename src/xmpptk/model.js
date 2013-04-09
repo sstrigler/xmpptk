@@ -48,6 +48,14 @@ xmpptk.Model.prototype.get = function(prop) {
                 if (i.indexOf('_') !== 0 &&
                     i.indexOf('_') != (i.length-1)) {
                     // no hidden prop
+                    if (!this[i]) {
+                        // it's empty
+                        continue;
+                    }
+                    if (typeof this[i].getItems == 'function') {
+                        // it's a collection
+                        obj[i] = this[i].getItems();
+                    } else
                     if (typeof this[i].get == 'function') {
                         // it's a xmpptk.Model, isn't it? :^==~
                         obj[i] = this[i].get();
