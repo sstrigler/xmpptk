@@ -99,11 +99,12 @@ xmpptk.RosterItem.prototype.getVCard = function() {
  * @param {{show: xmpptk.RosterItem.PresenceShow, status=: string, priority=: number}} presence properties of the actual presence information
  */
 xmpptk.RosterItem.prototype.setPresence = function(resource, presence) {
-    if (presence.show === xmpptk.RosterItem.PresenceShow.UNVAILABLE)
+    if (presence.show === xmpptk.RosterItem.PresenceShow.UNAVAILABLE)
         delete this.resources[resource];
     else
         this.resources[resource] = presence;
-    this.set('presence', this._getPresence() || xmpptk.RosterItem.PRESENCEDEFAULT);
+    this.set('presence', this._getPresence() ||
+             xmpptk.RosterItem.PRESENCEDEFAULT);
 };
 
 /**
