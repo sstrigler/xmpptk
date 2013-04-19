@@ -10,32 +10,21 @@ goog.require('xmpptk.muc.Client');
 goog.require('xmpptk.muc.Occupant');
 goog.require('xmpptk.Collection');
 
-/** @typedef {{room: string, service: string, nick: string}} */
-xmpptk.muc.RoomJid;
-
 /**
  * @constructor
  * @extends {xmpptk.Model}
- * @param {xmpptk.muc.Client} client a muc enabled xmpp client
- * @param {xmpptk.muc.RoomJid} room_jid Config to denote the rooms identity
- * @param {?string} password an optional password to access to room with
+ * @param {string} full_jid Full jid of room including nick.
  */
-xmpptk.muc.Room = function(client, room_jid, password) {
-    this._logger.info("creating room " + goog.json.serialize(room_jid));
-
-    // keep calm! it's better than you think, isn't it?
-    goog.object.extend(this, room_jid);
+xmpptk.muc.Room = function(full_jid) {
+    this._logger.info("creating room for " + full_jid);
 
     xmpptk.Model.call(this);
 
     /** @type {string} */
-    this.id = this['room']+'@'+this['service'];
+    this.jid = full_jid.substring(0, full_jid.indexOf('/'));
 
     /** @type {string} */
-    this.jid = this['room']+'@'+this['service']+'/'+this['nick'];
-
-    /** @type {string} */
-    this.password = password || '';
+    this.full_jid =  full_jid;
 
     /** @type {xmpptk.muc.Roster} */
     this.roster = new xmpptk.Collection(xmpptk.muc.Occupant, 'jid');
@@ -46,27 +35,23 @@ xmpptk.muc.Room = function(client, room_jid, password) {
     /** @type {array} */
     this.messages = [];
 
-    /** @type {array} */
-    this.events = [];
-
-    /** @type {array} */
-    this.chatStates = {};
-
     /**
-     * @type {xmpptk.muc.Client}
-     * @private */
-    this._client = client;
+     * events like join/part messages
+     * @type {array} */
+    this.events = [];
 
     /**
      * indicates whether we've been admitted to room or not
      * @type {boolean}
-     * @private
      */
-    this._admitted = false;
+    this.admitted = false;
 };
 goog.inherits(xmpptk.muc.Room, xmpptk.Model);
 
-xmpptk.muc.Room.prototype._logger = goog.debug.Logger.getLogger('xmpptk.muc.Room');
+xmpptk.muc.Room.prototype._logger =
+    goog.debug.Logger.getLogger('xmpptk.muc.Room');
+
+xmpptk.muc.Room.prototype.getId = function() { return this.full_jid; };
 
 /**
  * handle a JSJaCPacket directed to this room
@@ -80,84 +65,6 @@ xmpptk.muc.Room.prototype.handleGroupchatPacket = function(oPacket) {
     case 'presence': return this._handleGroupchatPresence(oPacket);
     case 'message': return this._handleGroupchatMessage(oPacket);
     }
-};
-
-/**
- * actually join the room
- * @param {function(object, string)} callback function to call when actually
- *                                            admitted to the room
- * @return {xmpptk.muc.Room} this rooms
- */
-xmpptk.muc.Room.prototype.join = function(callback) {
-    this._logger.info("joining room "+this.jid+" with password "+this.password);
-
-    // register handlers
-    this._client.registerRoom(this);
-
-    // register callback
-    if (callback) {
-        this.subscribeOnce('admitted', callback);
-    }
-
-    // send presence to rooms jid
-    var extra;
-    if (this.password !== '') {
-        extra = goog.bind(function(p) {
-            return p.appendNode('x', {'xmlns': xmpptk.muc.NS.BASE},
-                                [p.buildNode('password',
-                                             {'xmlns': xmpptk.muc.NS.BASE},
-                                             this.password)]);
-        }, this);
-    }
-
-    this._client.sendPresence('available', null, this.jid, extra);
-    return this;
-};
-
-/**
- * leave this room
- */
-xmpptk.muc.Room.prototype.part = function() {
-    // unregister handlers
-    this._client.unregisterRoom(this);
-
-    // send presence
-    this._client.sendPresence('unavailable', undefined, this.jid);
-};
-
-/**
- * send a message to the room (and thus to all occupants)
- * @param {string} msg the message to send
- */
-xmpptk.muc.Room.prototype.sendMessage = function(msg) {
-    this._client.sendGroupchatMessage(this.id, msg);
-};
-
-/**
- * send a private message to a room participant
- * @param {string} nick the nick of the participant to send message to
- * @param {string} msg the message to send
- */
-xmpptk.muc.Room.prototype.sendPrivateMessage = function(nick, msg) {
-    var rcpt = this.roster.getItem(this.id+'/'+nick);
-    if (rcpt) {
-        this._client.sendMessage(rcpt.get('jid'), msg);
-    } else {
-        this._logger.info("recepient with nick "+nick+" not found in roster");
-    }
-};
-
-/**
- * set subject of this room
- * @param {string} subject the subject to set
- */
-xmpptk.muc.Room.prototype.setSubject = function(subject) {
-    this._logger.info("sending subject: "+subject);
-    var m = new JSJaCMessage();
-    m.setTo(this.id);
-    m.setType('groupchat');
-    m.setSubject(subject);
-    this._client.send(m);
 };
 
 /**
@@ -220,9 +127,7 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
             if (reason && reason.firstChild)
                 event.reason = reason.firstChild.nodeValue;
         }
-        if (this.roster.hasItem(from)) {
-            this.roster.removeItem(from);
-        }
+        this.roster.remove(from);
         this.publish('occupant_left', event);
         this.events.push(goog.object.extend(event, {'type': 'occupant_left'}));
         this.set('events', this.events);
@@ -236,11 +141,11 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
             if (item) {
                 var role = item.getAttribute('role');
 
-                if (from == this.jid) {
+                if (from == this.full_jid) {
                     // it's my own presence, check if we're part of the game now
-                    if (!this._admitted && !goog.array.contains(['none', 'outcast'], role)) {
-                        this._admitted = true;
-                        this.publish('admitted');
+                    if (!this.admitted &&
+                        !goog.array.contains(['none', 'outcast'], role)) {
+                        this.set('admitted', true);
                     }
                 }
 

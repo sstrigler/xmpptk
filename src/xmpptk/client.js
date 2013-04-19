@@ -1,18 +1,17 @@
 goog.provide('xmpptk.Client');
 
-goog.require('xmpptk');
-goog.require('xmpptk.Config');
-goog.require('xmpptk.Model');
-goog.require('xmpptk.Roster');
-goog.require('xmpptk.RosterItem');
-
 goog.require('goog.array');
 goog.require('goog.object');
+goog.require('goog.json');
 goog.require('goog.debug.Logger');
 goog.require('goog.storage.Storage');
 goog.require('goog.storage.mechanism.HTML5SessionStorage');
 
-goog.require('goog.json');
+goog.require('xmpptk');
+goog.require('xmpptk.Config');
+goog.require('xmpptk.Model');
+goog.require('xmpptk.Collection');
+goog.require('xmpptk.RosterItem');
 
 /**
  * The actual XMPP connection that wraps all the tricky XMPP stuff.
@@ -23,12 +22,12 @@ xmpptk.Client = function() {
     xmpptk.Model.call(this);
 
     /** @type {xmpptk.Roster} */
-    this.roster = new xmpptk.Roster(this);
+    this.roster = new xmpptk.Collection(xmpptk.RosterItem);
 
     /** @type {string} */
-    this.jid =xmpptk.getConfig('username') + '@' +
-            xmpptk.getConfig('domain') + '/' +
-            xmpptk.getConfig('resource');
+    this.jid = xmpptk.getConfig('username') + '@' +
+        xmpptk.getConfig('domain') + '/' +
+        xmpptk.getConfig('resource');
 
     /** @type {boolean} */
     this.connected = false;
@@ -113,10 +112,16 @@ xmpptk.Client.NS = {
 xmpptk.Client.prototype._logger = goog.debug.Logger.getLogger('xmpptk.Client');
 
 /**
+ * @type {goog.debug.Logger}
+ * @protected
+ */
+xmpptk.Client.prototype._logger = goog.debug.Logger.getLogger('xmpptk.Client');
+
+/**
  * Retrieve the roster associated with the connected user.
  * @param {function(xmpptk.Roster)} callback A function to be called with the
  *                                           resulting roster as argument.
- * @param {object?} context The context for the callback to be called within.
+ * @param {object=} context The context for the callback to be called within.
  */
 xmpptk.Client.prototype.getRoster = function(callback, context) {
     var iq = new JSJaCIQ();
@@ -129,12 +134,11 @@ xmpptk.Client.prototype.getRoster = function(callback, context) {
                 goog.array.map(
                     resIQ.getQuery().getElementsByTagName('item'),
                     function(item) {
-                        return {
-                            'jid'          : item.getAttribute('jid'),
-                            'name'         : item.getAttribute('name'),
-                            'subscription' : item.getAttribute('subscription'),
-                            'client'       : this
-                        };
+                        return [
+                            item.getAttribute('jid'),
+                            item.getAttribute('name'),
+                            item.getAttribute('subscription')
+                        ];
                     },
                     this)
             );
@@ -153,7 +157,7 @@ xmpptk.Client.prototype.getRoster = function(callback, context) {
  * Retrieve client's saved state from the server.
  * @param {function(xmpptk.Roster)} callback A function to be called with the
  *                                           resulting state as argument.
- * @param {object?} context The context for the callback to be called within.
+ * @param {object=} context The context for the callback to be called within.
  */
 xmpptk.Client.prototype.getState = function(callback, context) {
     var iq = new JSJaCIQ();
@@ -179,7 +183,7 @@ xmpptk.Client.prototype.getState = function(callback, context) {
  * @param {string} jid the bare jid of the entity to retrive vCard for
  * @param {function(object)} callback a callback to be called with the result of
  *                                    the query
- * @param {object?} context optional context to call callback with
+ * @param {object=} context optional context to call callback with
  */
 xmpptk.Client.prototype.getVCard = function(jid, callback, context) {
     var iq = new JSJaCIQ();
@@ -212,7 +216,7 @@ xmpptk.Client.prototype.isConnected = function() {
  * 'domain', 'resource' and 'password' properties.
  * @param {function()} callback A callback to be called once authentication is
  *                              finished.
- * @param {context?} context Optional contect for callback from above
+ * @param {context=} context Optional contect for callback from above
  *                           (what 'this' refers to within the callback).
  */
 xmpptk.Client.prototype.login = function(callback, context) {
@@ -240,6 +244,7 @@ xmpptk.Client.prototype.logout = function() {
  */
 xmpptk.Client.prototype.resume = function() {
     if (this._con.resumeFromData(this._storage.get('jsjac'))) {
+        this._logger.info("resuming");
         this.set(this._storage.get('xmpptk'));
         return true;
     }
@@ -281,11 +286,11 @@ xmpptk.Client.prototype.send = function(packet) {
  * depending on whether the 'jid' parameter is given or not.
  * @param {string} state One of 'available', 'chat', 'away', 'xa', 'dnd' or
  *                       'unavailable'.
- * @param {string?} message A free to choose message to associated with the
+ * @param {string=} message A free to choose message to associated with the
  *                         presence's  state.
- * @param {string?} jid An entitie's jid to send the presence to
+ * @param {string=} jid An entitie's jid to send the presence to
  *                      (i.e. a directed presence).
- * @param {function(JSJaCPresence)?} extra A function that's allowed to modify
+ * @param {function(JSJaCPresence)=} extra A function that's allowed to modify
  *                                         the presence stanza to be sent.
  * @return {boolean} Whether enqueing packet succeeded.
  */
@@ -369,6 +374,11 @@ xmpptk.Client.prototype.sendSubscription = function(jid, type, message) {
  * @return {boolean} Whether suspending the session succeeded.
  */
 xmpptk.Client.prototype.suspend = function() {
+    if (!this.isConnected()) {
+        this._storage.remove('jsjac');
+        this._storage.remove('xmpptk');
+        return;
+    }
     this._storage.set('xmpptk', this.get());
     this._storage.set('jsjac', this._con.suspendToData());
     return true;
@@ -455,12 +465,9 @@ xmpptk.Client.prototype._handlePresence = function(p) {
         return;
     }
 
-    this.publish(
-        'presence',
-        {
-            'from': p.getFromJID(),
-            'presence' : presence
-        }
+    this.roster.getItem(p.getFromJID().getBareJID()).setPresence(
+        p.getFromJID().getResource(),
+        presence
     );
 };
 

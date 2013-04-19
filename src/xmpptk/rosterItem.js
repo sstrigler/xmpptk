@@ -6,27 +6,27 @@ goog.require('xmpptk.Model');
 /**
  * @constructor
  * @extends {xmpptk.Model}
- * @param {jid: string, subscription: xmpptk.Roster.Subscription, name=: string} item props to fill item with
+ * @param {string} jid The bare jid of the roster item.
+ * @param {xmpptk.Roster.Subscription=} subscription  The subscription status.
+ * @param {string=} name Optional nickname for RosterItem.
+ * @param {Array.<string>=} groups Array of groupnames the item is associated to.
  */
-xmpptk.RosterItem = function(item) {
+xmpptk.RosterItem = function(jid, subscription, name, groups) {
     xmpptk.Model.call(this);
 
     /** @type {string} */
-    this.jid = item['jid'];
+    this.jid = jid;
 
     /** @type {xmpptk.RosterItem.Subscription} */
-    this.subscription = item.subscription;
+    this.subscription = subscription || xmpptk.RosterItem.Subscription.NONE;
 
     /** @type {string} */
-    this.name = item.name || (new JSJaCJID(item['jid'])).getNode();
+    this.name = name || (new JSJaCJID('jid')).getNode();
 
-    this._client = item.client;
-    this.set('presence', xmpptk.RosterItem.PRESENCEDEFAULT);
+    this.presence = xmpptk.RosterItem.PRESENCEDEFAULT;
 
     /** @type {Object.<string, xmpptk.Presence>} */
     this.resources = {};
-
-    this.getVCard();
 };
 goog.inherits(xmpptk.RosterItem, xmpptk.Model);
 
@@ -64,32 +64,6 @@ xmpptk.RosterItem.prototype._logger =
  */
 xmpptk.RosterItem.prototype.getId = function() {
     return this.jid;
-};
-
-xmpptk.RosterItem.prototype.getVCard = function() {
-    // lookup localStorage - if cache miss retrieve by XMPP
-    var vCard;
-    if (typeof 'Storage' !== 'undefined')
-        vCard = sessionStorage['vCard'+this.getId()];
-
-    if (vCard) {
-        this._logger.info('got vCard from localStorage');
-        this.set('vCard', goog.json.parse(vCard));
-    } else {
-        if (!this._client || typeof this._client.getVCard !== 'function')
-            return;
-        this._logger.info("retrieving vCard");
-        this._client.getVCard(this.getId(), function(vCard) {
-            if (!vCard)
-                return;
-            this._logger.info("got avatar by vCard: "+
-                              goog.json.serialize(vCard));
-            if (typeof 'Storage' !== 'undefined')
-                sessionStorage['vCard'+this.getId()] =
-                goog.json.serialize(vCard);
-            this.set('vCard', vCard);
-        }, this);
-    }
 };
 
 /**
