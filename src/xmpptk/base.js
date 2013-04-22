@@ -1,5 +1,8 @@
 goog.provide('xmpptk');
 
+/** @typedef {{show:string, status: string, priority: number}} */
+xmpptk.Presence;
+
 xmpptk.call = function(fn, context, args) {
     if (context) {
         fn = goog.bind(fn, context);
