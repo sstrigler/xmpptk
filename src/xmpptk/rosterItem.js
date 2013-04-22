@@ -60,13 +60,6 @@ xmpptk.RosterItem.prototype._logger =
     goog.debug.Logger.getLogger('xmpptk.RosterItem');
 
 /**
- * return own id
- */
-xmpptk.RosterItem.prototype.getId = function() {
-    return this.jid;
-};
-
-/**
  * Update presence for resource given
  *
  * @param {string} resource the resource associated with this presence
