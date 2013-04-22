@@ -10,9 +10,11 @@ goog.require('xmpptk.Model');
  */
 xmpptk.muc.Occupant = function(jid) {
     xmpptk.Model.call(this);
-    this.set(jid);
+    this.jid = jid;
 };
 goog.inherits(xmpptk.muc.Occupant, xmpptk.Model);
+
+xmpptk.muc.Occupant.id = 'jid';
 
 /** @enum {string} */
 xmpptk.muc.Occupant.Affiliation = {
