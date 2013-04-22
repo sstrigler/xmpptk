@@ -54,26 +54,12 @@ xmpptk.muc.Room.prototype._logger =
 xmpptk.muc.Room.prototype.getId = function() { return this.jid; };
 
 /**
- * handle a JSJaCPacket directed to this room
- * @param {JSJaCPacket} oPacket a JSJaCPacket to handle
- */
-xmpptk.muc.Room.prototype.handleGroupchatPacket = function(oPacket) {
-    // actually looking for a more elegant solution, but hey, saw the
-    // ponies?
-    this._logger.info(oPacket.pType());
-    switch (oPacket.pType()) {
-    case 'presence': return this._handleGroupchatPresence(oPacket);
-    case 'message': return this._handleGroupchatMessage(oPacket);
-    }
-};
-
-/**
  * handles a message packet directed to this room
  * @private
  * @param {JSJaCMessage} oMsg a presence packet
  * @return {boolean}
  */
-xmpptk.muc.Room.prototype._handleGroupchatMessage = function(oMsg) {
+xmpptk.muc.Room.prototype.handleGroupchatMessage = function(oMsg) {
     this._logger.info("room got a message: "+oMsg.xml());
 
     var roomSubject = oMsg.getSubject();
@@ -102,7 +88,7 @@ xmpptk.muc.Room.prototype._handleGroupchatMessage = function(oMsg) {
  * @private
  * @param {JSJaCPresence} oPres a presence packet
  */
-xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
+xmpptk.muc.Room.prototype.handleGroupchatPresence = function(oPres) {
     this._logger.info("room got a presence: "+oPres.xml());
 
     var from = oPres.getFrom();

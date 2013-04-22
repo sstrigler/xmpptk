@@ -40,13 +40,17 @@ xmpptk.muc.Client.prototype.login = function(callback, context) {
 
     // register handlers
     this._con.registerHandler('message',
-                              goog.bind(this._handleGroupchatPacket, this));
+                              goog.bind(this._handleGroupchatPacket,
+                                        this,
+                                        'handleGroupchatMessage'));
     this._con.registerHandler('presence', 'x',
                               xmpptk.muc.NS.USER,
-                              goog.bind(this._handleGroupchatPacket, this));
+                              goog.bind(this._handleGroupchatPacket,
+                                        this,
+                                        'handleGroupchatPresence'));
 };
 
- /**
+/**
  * Join a room.
  * @param {string} jid The full jid of the room (including nickname)
  * @param {string=} password Password for room (if required)
@@ -129,16 +133,18 @@ xmpptk.muc.Client.prototype.setSubject = function(room, subject) {
 };
 
 /**
+ * Hand over packet to linked room.
+ * @private
  * @param {JSJaCPacket} oJSJaCPacket an object as it's passed by jsjac
  */
-xmpptk.muc.Client.prototype._handleGroupchatPacket = function(oJSJaCPacket) {
+xmpptk.muc.Client.prototype._handleGroupchatPacket = function(fn, oJSJaCPacket) {
     this._logger.info("handling muc packet: "+oJSJaCPacket.xml());
 
     var room_id = oJSJaCPacket.getFromJID().removeResource().toString();
     if (this.rooms.hasItem(room_id)) {
         this._logger.info("handing over to room with id "+room_id);
         try {
-            this.rooms.getItem(room_id).handleGroupchatPacket(oJSJaCPacket);
+            this.rooms.getItem(room_id)[fn](oJSJaCPacket);
         } catch(e) {
             this._logger.severe(
                 "failed to call room's handleGroupchatPacket", e);
