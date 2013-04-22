@@ -112,12 +112,6 @@ xmpptk.Client.NS = {
 xmpptk.Client.prototype._logger = goog.debug.Logger.getLogger('xmpptk.Client');
 
 /**
- * @type {goog.debug.Logger}
- * @protected
- */
-xmpptk.Client.prototype._logger = goog.debug.Logger.getLogger('xmpptk.Client');
-
-/**
  * Retrieve the roster associated with the connected user.
  * @param {function(xmpptk.Roster)} callback A function to be called with the
  *                                           resulting roster as argument.
