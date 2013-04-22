@@ -130,7 +130,6 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
         this.roster.remove(from);
         this.publish('occupant_left', event);
         this.events.push(goog.object.extend(event, {'type': 'occupant_left'}));
-        this.set('events', this.events);
     } else {
         var occupant = this.roster.getItem(from);
 
@@ -157,8 +156,6 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
 
                 this.publish('occupant_joined', event);
                 this.events.push(goog.object.extend(event, {'type': 'occupant_joined'}));
-                this.set('events', this.events);
-
             }
         } else {
             this._logger.info("no item found for "+xmpptk.muc.NS.USER);
