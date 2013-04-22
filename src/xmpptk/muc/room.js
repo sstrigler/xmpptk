@@ -114,9 +114,11 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
         var error = oPres.getChild('error');
         if (error.getAttribute('type') == 'cancel' &&
             error.firstChild.tagName == 'conflict') {
-            this.publish('nick_conflict');
+            event.type = 'nick_conflict';
+            this.publish('event', event);
         }
     } else if (oPres.getType() == 'unavailable') {
+        event.type = 'occupant_left';
         var status = oPres.getChild('status', xmpptk.muc.NS.USER);
         if (status && status.getAttribute('code') == '307') {
             event.kicked = true;
@@ -128,8 +130,9 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
                 event.reason = reason.firstChild.nodeValue;
         }
         this.roster.remove(from);
-        this.publish('occupant_left', event);
-        this.events.push(goog.object.extend(event, {'type': 'occupant_left'}));
+
+        this.publish('event', event);
+        this.events.push(event);
     } else {
         var occupant = this.roster.getItem(from);
 
@@ -154,8 +157,9 @@ xmpptk.muc.Room.prototype._handleGroupchatPresence = function(oPres) {
                     'real_jid':    item.getAttribute('jid')
                 });
 
-                this.publish('occupant_joined', event);
-                this.events.push(goog.object.extend(event, {'type': 'occupant_joined'}));
+                event.type = 'occupant_joined';
+                this.publish('event', event);
+                this.events.push(event);
             }
         } else {
             this._logger.info("no item found for "+xmpptk.muc.NS.USER);
