@@ -10,6 +10,7 @@ goog.require('goog.array');
  */
 xmpptk.Model = function() {
     xmpptk.Subject.call(this);
+
     /** @private */
     this._propertyHandlers = {};
 };
@@ -74,11 +75,13 @@ xmpptk.Model.prototype.get = function(prop) {
     throw "property not found: "+prop;
 };
 
+xmpptk.Model.id = 'id';
+
 /**
  * return own id
  */
 xmpptk.Model.prototype.getId = function() {
-    return this.id;
+    return this[this.constructor.id];
 };
 
 
