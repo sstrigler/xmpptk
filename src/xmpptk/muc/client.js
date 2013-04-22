@@ -55,7 +55,7 @@ xmpptk.muc.Client.prototype.login = function(callback, context) {
 xmpptk.muc.Client.prototype.joinRoom = function(jid, password) {
     this._logger.info("joining room "+jid+" with password "+password);
 
-    var room = this.rooms.add(jid);
+    var room = this.rooms.addItem(new xmpptk.muc.Room(jid));
 
     // send presence to rooms jid
     var extra;
@@ -101,20 +101,6 @@ xmpptk.muc.Client.prototype.sendPrivateMessage = function(room, nick, msg) {
 };
 
 /**
- * Set subject of a room.
- * @param {xmpptk.muc.Room} room The room to set the subject of.
- * @param {string} subject The subject to set.
- */
-xmpptk.muc.Client.prototype.setSubject = function(room, subject) {
-    this._logger.info("sending subject: "+subject);
-    var m = new JSJaCMessage();
-    m.setTo(room.jid);
-    m.setType('groupchat');
-    m.setSubject(subject);
-    this.send(m);
-};
-
-/**
  * Send a groupchat message to a room.
  * @param {xmpptk.muc.Room} room The room to send the message to.
  * @param {string} message The body of the message to send.
@@ -129,6 +115,20 @@ xmpptk.muc.Client.prototype.sendGroupchatMessage = function(room, message) {
 };
 
 /**
+ * Set subject of a room.
+ * @param {xmpptk.muc.Room} room The room to set the subject of.
+ * @param {string} subject The subject to set.
+ */
+xmpptk.muc.Client.prototype.setSubject = function(room, subject) {
+    this._logger.info("sending subject: "+subject);
+    var m = new JSJaCMessage();
+    m.setTo(room.jid);
+    m.setType('groupchat');
+    m.setSubject(subject);
+    this.send(m);
+};
+
+/**
  * @param {JSJaCPacket} oJSJaCPacket an object as it's passed by jsjac
  */
 xmpptk.muc.Client.prototype._handleGroupchatPacket = function(oJSJaCPacket) {
@@ -140,8 +140,8 @@ xmpptk.muc.Client.prototype._handleGroupchatPacket = function(oJSJaCPacket) {
         try {
             this.rooms.getItem(room_id).handleGroupchatPacket(oJSJaCPacket);
         } catch(e) {
-            this._logger.severe("failed to call room's handleGroupchatPacket:"+
-                                e.message, e);
+            this._logger.severe(
+                "failed to call room's handleGroupchatPacket", e);
         }
         return true;
     } else {

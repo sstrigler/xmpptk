@@ -51,7 +51,7 @@ goog.inherits(xmpptk.muc.Room, xmpptk.Model);
 xmpptk.muc.Room.prototype._logger =
     goog.debug.Logger.getLogger('xmpptk.muc.Room');
 
-xmpptk.muc.Room.prototype.getId = function() { return this.full_jid; };
+xmpptk.muc.Room.prototype.getId = function() { return this.jid; };
 
 /**
  * handle a JSJaCPacket directed to this room
