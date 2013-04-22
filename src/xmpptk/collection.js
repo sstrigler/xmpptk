@@ -22,11 +22,8 @@ xmpptk.Collection =  function(itemClass) {
 };
 goog.inherits(xmpptk.Collection, xmpptk.Model);
 
-xmpptk.Collection.prototype.add = function(id) {
-    // this should also work if not an id but some object as param to
-    // constructor are given
-
-    return this.addItem(new this._itemClass(id));
+xmpptk.Collection.prototype.add = function(id, skip) {
+    return this.addItem(new this._itemClass(id), skip);
 };
 
 xmpptk.Collection.prototype.addItem = function(item, skip) {
@@ -44,7 +41,7 @@ xmpptk.Collection.prototype.getItem = function(id) {
     if (this.hasItem(id)) {
         return this.items[id];
     } else {
-        return this.addItem(new this._itemClass(id));
+        return this.add(id);
     }
 };
 
@@ -84,8 +81,7 @@ xmpptk.Collection.prototype.setItems = function(items) {
     goog.array.forEach(
         items,
         function(item) {
-            console.log(item);
-            this.addItem(new this._itemClass(item), true);
+            this.add(item[this._itemClass.id], true).set(item);
         },
         this
     );
