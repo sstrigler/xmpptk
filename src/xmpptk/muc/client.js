@@ -21,6 +21,18 @@ xmpptk.muc.Client = function() {
     xmpptk.Client.call(this);
 
     this.rooms = new xmpptk.Collection(xmpptk.muc.Room);
+
+    // register handlers
+    this._con.registerHandler('message',
+                              goog.bind(this._handleGroupchatPacket,
+                                        this,
+                                        'handleGroupchatMessage'));
+    this._con.registerHandler('presence', 'x',
+                              xmpptk.muc.NS.USER,
+                              goog.bind(this._handleGroupchatPacket,
+                                        this,
+                                        'handleGroupchatPresence'));
+
 };
 goog.inherits(xmpptk.muc.Client, xmpptk.Client);
 goog.addSingletonGetter(xmpptk.muc.Client);
@@ -31,10 +43,11 @@ goog.addSingletonGetter(xmpptk.muc.Client);
  * @param {string=} password Password for room (if required)
  * @return {xmpptk.muc.Room} The new room
  */
-xmpptk.muc.Client.prototype.joinRoom = function(jid, password) {
+xmpptk.muc.Client.prototype.joinRoom = function(jid, nick, password) {
     this._logger.info("joining room "+jid+" with password "+password);
 
-    var room = this.rooms.addItem(new xmpptk.muc.Room(jid));
+    var room = this.rooms.add(jid);
+    room.nick = nick;
 
     // send presence to rooms jid
     var extra;
@@ -47,27 +60,9 @@ xmpptk.muc.Client.prototype.joinRoom = function(jid, password) {
         }, this);
     }
 
-    this.sendPresence('available', '', jid, extra);
+    this.sendPresence('available', '', jid+'/'+nick, extra);
 
     return room;
-};
-
-/**
- * @inheritDoc
- */
-xmpptk.muc.Client.prototype.login = function(callback, context) {
-    goog.base(this, 'login', callback, context);
-
-    // register handlers
-    this._con.registerHandler('message',
-                              goog.bind(this._handleGroupchatPacket,
-                                        this,
-                                        'handleGroupchatMessage'));
-    this._con.registerHandler('presence', 'x',
-                              xmpptk.muc.NS.USER,
-                              goog.bind(this._handleGroupchatPacket,
-                                        this,
-                                        'handleGroupchatPresence'));
 };
 
 /**
