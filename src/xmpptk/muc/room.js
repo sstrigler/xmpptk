@@ -13,18 +13,19 @@ goog.require('xmpptk.Collection');
 /**
  * @constructor
  * @extends {xmpptk.Model}
- * @param {string} full_jid Full jid of room including nick.
+ * @param {string} jid jid of room.
+ * @param {string} nick nick to use within room.
  */
-xmpptk.muc.Room = function(full_jid) {
-    this._logger.info("creating room for " + full_jid);
+xmpptk.muc.Room = function(jid, nick) {
+    this._logger.info("creating room for " + jid);
 
     xmpptk.Model.call(this);
 
     /** @type {string} */
-    this.jid = full_jid.substring(0, full_jid.indexOf('/'));
+    this.jid = jid;
 
     /** @type {string} */
-    this.full_jid =  full_jid;
+    this.nick =  nick || 'unkown';
 
     /** @type {xmpptk.muc.Roster} */
     this.roster = new xmpptk.Collection(xmpptk.muc.Occupant, 'jid');
@@ -48,10 +49,10 @@ xmpptk.muc.Room = function(full_jid) {
 };
 goog.inherits(xmpptk.muc.Room, xmpptk.Model);
 
+xmpptk.muc.Room.id = 'jid';
+
 xmpptk.muc.Room.prototype._logger =
     goog.debug.Logger.getLogger('xmpptk.muc.Room');
-
-xmpptk.muc.Room.prototype.getId = function() { return this.jid; };
 
 /**
  * handles a message packet directed to this room
@@ -120,6 +121,7 @@ xmpptk.muc.Room.prototype.handleGroupchatPresence = function(oPres) {
         this.publish('event', event);
         this.events.push(event);
     } else {
+
         var occupant = this.roster.getItem(from);
 
         var x = oPres.getChild('x', xmpptk.muc.NS.USER);
@@ -129,7 +131,7 @@ xmpptk.muc.Room.prototype.handleGroupchatPresence = function(oPres) {
             if (item) {
                 var role = item.getAttribute('role');
 
-                if (from == this.full_jid) {
+                if (oPres.getFromJID().getResource() == this.nick) {
                     // it's my own presence, check if we're part of the game now
                     if (!this.admitted &&
                         !goog.array.contains(['none', 'outcast'], role)) {
