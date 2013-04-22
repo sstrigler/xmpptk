@@ -1,7 +1,6 @@
 goog.provide('xmpptk.muc.Client');
 goog.provide('xmpptk.muc.NS');
 
-goog.require('goog.object');
 goog.require('goog.debug.Logger');
 
 goog.require('xmpptk.Client');
@@ -25,30 +24,6 @@ xmpptk.muc.Client = function() {
 };
 goog.inherits(xmpptk.muc.Client, xmpptk.Client);
 goog.addSingletonGetter(xmpptk.muc.Client);
-
-/**
- * @type {goog.debug.Logger}
- * @protected
- */
-xmpptk.muc.Client.prototype._logger = goog.debug.Logger.getLogger('xmpptk.muc.Client');
-
-/**
- * @inheritDoc
- */
-xmpptk.muc.Client.prototype.login = function(callback, context) {
-    goog.base(this, 'login', callback, context);
-
-    // register handlers
-    this._con.registerHandler('message',
-                              goog.bind(this._handleGroupchatPacket,
-                                        this,
-                                        'handleGroupchatMessage'));
-    this._con.registerHandler('presence', 'x',
-                              xmpptk.muc.NS.USER,
-                              goog.bind(this._handleGroupchatPacket,
-                                        this,
-                                        'handleGroupchatPresence'));
-};
 
 /**
  * Join a room.
@@ -78,6 +53,24 @@ xmpptk.muc.Client.prototype.joinRoom = function(jid, password) {
 };
 
 /**
+ * @inheritDoc
+ */
+xmpptk.muc.Client.prototype.login = function(callback, context) {
+    goog.base(this, 'login', callback, context);
+
+    // register handlers
+    this._con.registerHandler('message',
+                              goog.bind(this._handleGroupchatPacket,
+                                        this,
+                                        'handleGroupchatMessage'));
+    this._con.registerHandler('presence', 'x',
+                              xmpptk.muc.NS.USER,
+                              goog.bind(this._handleGroupchatPacket,
+                                        this,
+                                        'handleGroupchatPresence'));
+};
+
+/**
  * Leave a room.
  * @param {xmpptk.muc.Room} room The room to part/leave.
  */
@@ -87,6 +80,20 @@ xmpptk.muc.Client.prototype.partRoom = function(room) {
 
     // unregister handlers
     this.rooms.remove(room.getId());
+};
+
+/**
+ * Send a groupchat message to a room.
+ * @param {xmpptk.muc.Room} room The room to send the message to.
+ * @param {string} message The body of the message to send.
+ */
+xmpptk.muc.Client.prototype.sendGroupchatMessage = function(room, message) {
+    var m = new JSJaCMessage();
+    m.setTo(room.jid);
+    m.setType('groupchat');
+    m.setBody(message);
+
+    this._con.send(m);
 };
 
 /**
@@ -102,20 +109,6 @@ xmpptk.muc.Client.prototype.sendPrivateMessage = function(room, nick, msg) {
     } else {
         this._logger.info("recepient with nick "+nick+" not found in roster");
     }
-};
-
-/**
- * Send a groupchat message to a room.
- * @param {xmpptk.muc.Room} room The room to send the message to.
- * @param {string} message The body of the message to send.
- */
-xmpptk.muc.Client.prototype.sendGroupchatMessage = function(room, message) {
-    var m = new JSJaCMessage();
-    m.setTo(room.jid);
-    m.setType('groupchat');
-    m.setBody(message);
-
-    this._con.send(m);
 };
 
 /**
@@ -156,3 +149,10 @@ xmpptk.muc.Client.prototype._handleGroupchatPacket = function(fn, oJSJaCPacket) 
 
     return false;
 };
+
+/**
+ * @type {goog.debug.Logger}
+ * @protected
+ */
+xmpptk.muc.Client.prototype._logger = goog.debug.Logger.getLogger(
+    'xmpptk.muc.Client');
