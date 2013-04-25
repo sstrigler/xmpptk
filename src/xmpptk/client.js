@@ -39,58 +39,10 @@ xmpptk.Client = function() {
         'priority': -1
     };
 
-    // hidden
-    this._con = new JSJaCHttpBindingConnection(xmpptk.Config);
+    /** @private */
+    this._con = this._initCon(new JSJaCHttpBindingConnection(xmpptk.Config));
 
-    this._con.registerHandler('onconnect',
-                              JSJaC.bind(this._handleConnected, this));
-
-    this._con.registerHandler('ondisconnect',
-                              JSJaC.bind(function() {
-                                  this.set('connected', this._con.connected());
-
-                                  this.set('presence',{
-                                      'show': 'unavailable',
-                                      'status' : 'disconnected',
-                                      'priority': -1
-                                  });
-
-                                  this.publish('disconnected',
-                                               this._con.status() ==
-                                               'session-terminate-conflict');
-                              },this));
-
-    this._con.registerHandler('onerror',
-                              JSJaC.bind(function(e) {
-                                  var error = {
-                                      code: e.getAttribute('code'),
-                                      type: e.getAttribute('type'),
-                                      condition: e.firstChild.nodeName
-                                  };
-                                  this._logger.info("an error occured: "+
-                                                    goog.json.serialize(error));
-                                  this.publish('error', error);
-                              }, this));
-
-    this._con.registerHandler('presence',
-                              JSJaC.bind(this._handlePresence, this));
-
-    this._con.registerHandler('message',
-                              JSJaC.bind(this._handleMessage, this));
-
-    this._con.registerIQSet('query',
-                            NS_ROSTER,
-                            JSJaC.bind(this._handleRosterPush, this));
-
-    this._con.registerHandler('packet_in',
-                              JSJaC.bind(function(packet) {
-                                  this._logger.fine("[IN]: "+packet.xml());
-                              }, this));
-    this._con.registerHandler('packet_out',
-                              JSJaC.bind(function(packet) {
-                                  this._logger.fine("[OUT]: "+packet.xml());
-                              }, this));
-
+    /** @private */
     this._storage = new goog.storage.Storage(
         new goog.storage.mechanism.HTML5SessionStorage());
 };
@@ -236,13 +188,39 @@ xmpptk.Client.prototype.logout = function() {
  * Resume client.
  * @return {boolean} Whether resume succeeded or not.
  */
-xmpptk.Client.prototype.resume = function() {
-    if (this._con.resumeFromData(this._storage.get('jsjac'))) {
-        this._logger.info("resuming");
-        this.set(this._storage.get('xmpptk'));
-        return true;
-    }
-    return false;
+xmpptk.Client.prototype.resume = function(callbacks) {
+    var resuming = false;
+
+    var statusChangedHandler = JSJaC.bind(function(status)
+    {
+        console.log(status);
+        switch (status) {
+        case 'resuming':
+            resuming = true;
+            break;
+        case 'processing':
+            if (resuming) {
+                resuming = false;
+                this.set(this._storage.get('xmpptk'));
+                callbacks.yay();
+            }
+            this._con.unregisterHandler('status_changed', statusChangedHandler);
+            break;
+        case 'terminated':
+            resuming = false;
+            this._con = this._initCon(
+                new JSJaCHttpBindingConnection(xmpptk.Config));
+            callbacks.nay();
+            break;
+        }
+    }, this);
+
+    this._con.registerHandler(
+        'status_changed',
+        statusChangedHandler
+    );
+
+    return this._con.resumeFromData(this._storage.get('jsjac'));
 };
 
 /**
@@ -489,4 +467,56 @@ xmpptk.Client.prototype._handleRosterPush = function(resIQ) {
             this._con.domain, 'result', resIQ.getID()
         )
     );
+};
+
+xmpptk.Client.prototype._initCon = function(con) {
+    con.registerHandler('onconnect',
+                        JSJaC.bind(this._handleConnected, this));
+
+    con.registerHandler('ondisconnect',
+                        JSJaC.bind(function() {
+                            this.set('connected', con.connected());
+
+                            this.set('presence',{
+                                'show': 'unavailable',
+                                'status' : 'disconnected',
+                                'priority': -1
+                            });
+
+                            this.publish('disconnected',
+                                         con.status() ==
+                                         'session-terminate-conflict');
+                        },this));
+
+    con.registerHandler('onerror',
+                        JSJaC.bind(function(e) {
+                            var error = {
+                                code: e.getAttribute('code'),
+                                type: e.getAttribute('type'),
+                                condition: e.firstChild.nodeName
+                            };
+                            this._logger.info("an error occured: "+
+                                              goog.json.serialize(error));
+                            this.publish('error', error);
+                        }, this));
+
+    con.registerHandler('presence',
+                        JSJaC.bind(this._handlePresence, this));
+
+    con.registerHandler('message',
+                        JSJaC.bind(this._handleMessage, this));
+
+    con.registerIQSet('query',
+                      NS_ROSTER,
+                      JSJaC.bind(this._handleRosterPush, this));
+
+    con.registerHandler('packet_in',
+                        JSJaC.bind(function(packet) {
+                            this._logger.fine("[IN]: "+packet.xml());
+                        }, this));
+    con.registerHandler('packet_out',
+                        JSJaC.bind(function(packet) {
+                            this._logger.fine("[OUT]: "+packet.xml());
+                        }, this));
+    return con;
 };

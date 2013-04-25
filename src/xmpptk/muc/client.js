@@ -21,18 +21,6 @@ xmpptk.muc.Client = function() {
     xmpptk.Client.call(this);
 
     this.rooms = new xmpptk.Collection(xmpptk.muc.Room);
-
-    // register handlers
-    this._con.registerHandler('message',
-                              goog.bind(this._handleGroupchatPacket,
-                                        this,
-                                        'handleGroupchatMessage'));
-    this._con.registerHandler('presence', 'x',
-                              xmpptk.muc.NS.USER,
-                              goog.bind(this._handleGroupchatPacket,
-                                        this,
-                                        'handleGroupchatPresence'));
-
 };
 goog.inherits(xmpptk.muc.Client, xmpptk.Client);
 goog.addSingletonGetter(xmpptk.muc.Client);
@@ -143,6 +131,21 @@ xmpptk.muc.Client.prototype._handleGroupchatPacket = function(fn, oJSJaCPacket) 
     }
 
     return false;
+};
+
+xmpptk.muc.Client.prototype._initCon = function(con) {
+    con = goog.base(this, '_initCon', con);
+
+    con.registerHandler('message',
+                        goog.bind(this._handleGroupchatPacket,
+                                  this,
+                                  'handleGroupchatMessage'));
+    con.registerHandler('presence', 'x',
+                        xmpptk.muc.NS.USER,
+                        goog.bind(this._handleGroupchatPacket,
+                                  this,
+                                  'handleGroupchatPresence'));
+    return con;
 };
 
 /**
