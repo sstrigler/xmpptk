@@ -193,7 +193,6 @@ xmpptk.Client.prototype.resume = function(callbacks) {
 
     var statusChangedHandler = JSJaC.bind(function(status)
     {
-        console.log(status);
         switch (status) {
         case 'resuming':
             resuming = true;
